@@ -1,6 +1,6 @@
 -- ======================================================
--- AUTOFARM ULTIME – VERSION GUI V17 (ORGANIZED TABBED GAME THEMED)
--- Style officiel "Dungeon Creator" - Tout Désactivé par défaut, Difficultés Dynamiques, Onglets Réorganisés
+-- AUTOFARM ULTIME – VERSION GUI V18 (COMBAT STABILIZED)
+-- Style officiel "Dungeon Creator" - Séparation Mouvement/Combat, Alternance Both, FredokaOne
 -- ======================================================
 
 repeat
@@ -147,7 +147,7 @@ end
 -- ============================================================
 
 local CONFIG = {
-	AutoFarm = false,
+	AutoFarm = false, -- Le mouvement automatique (tweening de mobs en mobs)
 	AutoAttack = false,
 	AutoHeal = false,
 	AutoCollect = false,
@@ -231,6 +231,7 @@ RunService.Stepped:Connect(function()
 		end
 	end
 
+	-- Forcer la position à l'offset configuré par rapport au monstre pour empêcher la chute
 	if CONFIG.AutoFarm and activeTarget and activeTarget.Parent and hrp and not isTweening then
 		local mobPart = activeTarget:FindFirstChild("HumanoidRootPart") or activeTarget:FindFirstChild("PrimaryPart")
 		if mobPart then
@@ -334,10 +335,23 @@ function getAliveMobs()
 	return mobs
 end
 
+local currentTarget = nil
 function getClosestMob()
-	local currentTarget = nil
+	if currentTarget and currentTarget.Parent and currentTarget:FindFirstChild("Humanoid") and currentTarget.Humanoid.Health > 0 then
+		local character = LocalPlayer.Character
+		local hrp = character and character:FindFirstChild("HumanoidRootPart")
+		local targetPart = currentTarget:FindFirstChild("HumanoidRootPart") or currentTarget:FindFirstChild("PrimaryPart")
+		if hrp and targetPart then
+			local dist = (hrp.Position - targetPart.Position).Magnitude
+			if dist < 80 then
+				return currentTarget
+			end
+		end
+	end
+
 	local mobs = getAliveMobs()
 	if #mobs == 0 then
+		currentTarget = nil
 		activeTarget = nil
 		return nil
 	end
@@ -345,8 +359,9 @@ function getClosestMob()
 	local character = LocalPlayer.Character
 	local hrp = character and character:FindFirstChild("HumanoidRootPart")
 	if not hrp then
-		activeTarget = mobs[1]
-		return mobs[1]
+		currentTarget = mobs[1]
+		activeTarget = currentTarget
+		return currentTarget
 	end
 
 	local closest = nil
@@ -508,79 +523,94 @@ function antiAFK()
 	end)
 end
 
--- 10. MAIN BOT LOOP
-local isRunning = false
-local loopThread = nil
+-- ============================================================
+-- 10. FIL PERMANENT D'EXÉCUTION (BACKGROUND LOOP)
+-- ============================================================
 
-function stopFarm()
-	isRunning = false
-	activeTarget = nil
-	if loopThread then
-		task.cancel(loopThread)
-		loopThread = nil
-	end
-end
-
-function startFarm()
-	if isRunning then return end
-	isRunning = true
-	STATS.StartTime = os.time()
-	antiAFK()
-
-	loopThread = task.spawn(function()
+local function runBackgroundLoop()
+	task.spawn(function()
 		local loopCounter = 0
-		while isRunning do
+		local combatCycle = 0
+		while true do
 			loopCounter = loopCounter + 1
 
-			-- Auto-heal (using game standard healing remote)
+			-- Auto-heal (soin constant si activé)
 			if CONFIG.AutoHeal and UseHeal then
 				local character = LocalPlayer.Character
 				local humanoid = character and character:FindFirstChild("Humanoid")
 				if humanoid and humanoid.Health / humanoid.MaxHealth < CONFIG.HealThreshold then
 					pcall(function() UseHeal:InvokeServer() end)
-					task.wait(0.3)
+					task.wait(0.2)
 				end
 			end
 
-			-- Auto-Attack
-			if CONFIG.AutoAttack then
+			-- 1. DEPLACEMENT (AUTOFARM DE MONSTRES EN MONSTRES)
+			if CONFIG.AutoFarm then
 				local target = getClosestMob()
 				if target then
 					tweenToMob(target)
-					
+				end
+			end
+
+			-- 2. COMBAT LOGIC (AUTO ATTACK ACTIVE)
+			if CONFIG.AutoAttack then
+				local target = activeTarget or getClosestMob()
+				if target then
 					local targetPart = target:FindFirstChild("HumanoidRootPart") or target:FindFirstChild("PrimaryPart")
 					local character = LocalPlayer.Character
 					local hrp = character and character:FindFirstChild("HumanoidRootPart")
-					local inRange = true
+					local inRange = false
 					if targetPart and hrp then
-						inRange = (hrp.Position - targetPart.Position).Magnitude <= CONFIG.MaxAttackDistance
+						-- Si le déplacement automatique est actif, on considère qu'on est à portée.
+						-- Sinon, seulement si on s'approche manuellement à moins de 25 studs.
+						local maxDist = CONFIG.AutoFarm and CONFIG.MaxAttackDistance or 25
+						inRange = (hrp.Position - targetPart.Position).Magnitude <= maxDist
 					end
 
 					if inRange then
+						combatCycle = combatCycle + 1
 						local mode = CONFIG.EquipMode
-						if mode == "Weapon Only" or mode == "Both" then
-							autoEquipSpecific(CONFIG.SelectedWeapon)
+						
+						if mode == "Both" then
+							-- Alternance des cycles d'équipements pour éviter le blocage Roblox d'un seul tool actif
+							if combatCycle % 2 == 1 then
+								-- Tour Épée
+								autoEquipSpecific(CONFIG.SelectedWeapon)
+								if CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Sword Only" then
+									swing()
+								end
+							else
+								-- Tour Sorts
+								autoEquipSpecific(CONFIG.SelectedElement)
+								if CONFIG.AutoSkills and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
+									for _, slot in ipairs(CONFIG.SelectedSkills) do
+										task.spawn(useSkill, slot)
+									end
+								end
+							end
+						else
+							-- Équipements uniques standards
+							if mode == "Weapon Only" then
+								autoEquipSpecific(CONFIG.SelectedWeapon)
+							elseif mode == "Element Only" then
+								autoEquipSpecific(CONFIG.SelectedElement)
+							end
+
 							if CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Sword Only" then
 								swing()
 							end
-						end
 
-						if CONFIG.AutoSkills and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
-							if mode == "Element Only" or mode == "Both" then
-								autoEquipSpecific(CONFIG.SelectedElement)
-							end
-							for _, slot in ipairs(CONFIG.SelectedSkills) do
-								if math.random(1, 3) == 1 then
+							if CONFIG.AutoSkills and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
+								for _, slot in ipairs(CONFIG.SelectedSkills) do
 									task.spawn(useSkill, slot)
 								end
 							end
 						end
 					end
-				else
-					activeTarget = nil
 				end
 			end
 
+			-- Tâches secondaires (Collect & Sell)
 			if CONFIG.AutoCollect and loopCounter % 15 == 0 then
 				task.spawn(autoCollect)
 			end
@@ -589,8 +619,8 @@ function startFarm()
 				task.spawn(autoSell)
 			end
 
-			-- Retry & Auto Join Dungeon
-			if CONFIG.AutoRetry and loopCounter % 12 == 0 then
+			-- Relancement de donjon (uniquement si autofarm actif)
+			if CONFIG.AutoFarm and CONFIG.AutoRetry and loopCounter % 12 == 0 then
 				local mobs = getAliveMobs()
 				if #mobs == 0 then
 					activeTarget = nil
@@ -612,12 +642,8 @@ function startFarm()
 end
 
 -- ============================================================
--- 11. CRÉATION DE L'INTERFACE AU STYLE OFFICIEL DU JEU (V17)
+-- 11. CRÉATION DE L'INTERFACE AU STYLE OFFICIEL DU JEU (V18)
 -- ============================================================
-
-local function animateColor(guiObject, property, targetColor, duration)
-	TweenService:Create(guiObject, TweenInfo.new(duration or 0.2), {[property] = targetColor}):Play()
-end
 
 local function createUltimateGUI()
 	-- ScreenGui
@@ -633,7 +659,6 @@ local function createUltimateGUI()
 	local colorTextWhite = Color3.fromRGB(255, 255, 255)     -- Texte blanc
 	local colorTextInactive = Color3.fromRGB(150, 175, 195)  -- Texte désactivé
 	
-	-- Couleurs des boutons (Gradients du jeu)
 	local colorGreenActive = Color3.fromRGB(0, 200, 80)      -- Bouton vert (Démarrer)
 	local colorRedWarning = Color3.fromRGB(220, 50, 50)      -- Bouton rouge (Quitter / Fermer)
 	local colorBlueSelect = Color3.fromRGB(40, 130, 220)     -- Bouton bleu (Medium / Options)
@@ -869,7 +894,7 @@ local function createUltimateGUI()
 	createTabButton("System", "rbxassetid://6031289116", "System", 5)
 
 	-- ============================================
-	-- HELPER CREATORS FOR ITEMS
+	-- HELPER WIDGETS
 	-- ============================================
 	local function createToggleRow(parent, label, iconId, configKey, layoutOrder)
 		local frame = Instance.new("Frame")
@@ -1303,10 +1328,10 @@ local function createUltimateGUI()
 	end
 
 	-- ============================================
-	-- PAGES CONTENTS DEFINITIONS (REORGANIZED V17)
+	-- PAGES DEFINITIONS (REORGANIZED V18)
 	-- ============================================
 
-	-- 1. STATUS TAB (STATS ONLY)
+	-- 1. STATUS TAB (START BUTTON & STATISTICS ONLY)
 	local mainToggleBtn = Instance.new("TextButton")
 	mainToggleBtn.Size = UDim2.new(1, 0, 0, 45)
 	mainToggleBtn.BackgroundColor3 = colorGreenActive
@@ -1335,21 +1360,21 @@ local function createUltimateGUI()
 	mainToggleBtn.Parent = pageStatus
 
 	mainToggleBtn.MouseEnter:Connect(function()
-		animateColor(mainToggleBtn, "BackgroundColor3", isRunning and Color3.fromRGB(255, 80, 80) or Color3.fromRGB(40, 220, 110))
+		animateColor(mainToggleBtn, "BackgroundColor3", CONFIG.AutoFarm and Color3.fromRGB(255, 80, 80) or Color3.fromRGB(40, 220, 110))
 	end)
 	mainToggleBtn.MouseLeave:Connect(function()
-		animateColor(mainToggleBtn, "BackgroundColor3", isRunning and colorRedWarning or colorGreenActive)
+		animateColor(mainToggleBtn, "BackgroundColor3", CONFIG.AutoFarm and colorRedWarning or colorGreenActive)
 	end)
 
 	mainToggleBtn.MouseButton1Click:Connect(function()
-		if isRunning then
+		CONFIG.AutoFarm = not CONFIG.AutoFarm
+		if CONFIG.AutoFarm then
+			mainToggleBtn.Text = "STOP AUTOFARM [F6]"
+			mainToggleBtn.BackgroundColor3 = colorRedWarning
+		else
 			stopFarm()
 			mainToggleBtn.Text = "START AUTOFARM [F6]"
 			mainToggleBtn.BackgroundColor3 = colorGreenActive
-		else
-			startFarm()
-			mainToggleBtn.Text = "STOP AUTOFARM [F6]"
-			mainToggleBtn.BackgroundColor3 = colorRedWarning
 		end
 	end)
 
@@ -1389,7 +1414,7 @@ local function createUltimateGUI()
 	statusStatsFrame.Parent = pageStatus
 
 
-	-- 2. COMBAT TAB (ALL COMBAT RELATED TOGGLES & OPTIONS)
+	-- 2. COMBAT TAB (ALL AUTOMATIONS TO ATTACK, GEAR, SKILLS, HEALS)
 	createSectionHeader(pageCombat, "COMBAT AUTOMATIONS", 1)
 	createToggleRow(pageCombat, "Auto Attack Monsters", "rbxassetid://6035043132", "AutoAttack", 2)
 	createToggleRow(pageCombat, "Auto Equip Gear", "rbxassetid://6035043132", "AutoEquip", 3)
@@ -1556,7 +1581,7 @@ local function createUltimateGUI()
 	end)
 
 
-	-- 4. DUNGEON TAB (CONTAINS COLLECT DROPS & AUTO RETRY & LOBBY SETTINGS)
+	-- 4. DUNGEON TAB (LOBBY SETTINGS & AUTO RETRY & HEAL THRESHOLD & AUTO COLLECT DROPS)
 	createSectionHeader(pageDungeon, "LOBBY SETTINGS", 1)
 	createDropdownRow(pageDungeon, "Dungeon Name :", "rbxassetid://6034287517", CONFIG.DungeonName, DUNGEONS_LIST, 2, function(newVal)
 		CONFIG.DungeonName = newVal
@@ -1584,7 +1609,7 @@ local function createUltimateGUI()
 	createToggleRow(pageDungeon, "Auto Collect Drops", "rbxassetid://6034287523", "AutoCollect", 10) -- Moved here!
 
 
-	-- 5. SYSTEM TAB (AUTO SELL & PERFORMANCE ONLY)
+	-- 5. SYSTEM TAB (AUTO SELL & NIGHT MODE)
 	createSectionHeader(pageSystem, "INVENTORY SELL", 1)
 	createToggleRow(pageSystem, "Auto Sell Items", "rbxassetid://6034287514", "AutoSell", 2)
 	createToggleRow(pageSystem, "Sell Common items", "rbxassetid://6034287514", "SellCommon", 3)
@@ -1681,23 +1706,26 @@ local function createUltimateGUI()
 		end
 	end)
 
-	-- Touche F6
+	-- Touche F6 pour toggle l'autofarm (mouvement)
 	UserInputService.InputBegan:Connect(function(input, gameProcessed)
 		if gameProcessed then return end
 		if input.KeyCode == Enum.KeyCode.F6 then
-			if isRunning then
+			CONFIG.AutoFarm = not CONFIG.AutoFarm
+			if CONFIG.AutoFarm then
+				mainToggleBtn.Text = "STOP AUTOFARM [F6]"
+				mainToggleBtn.BackgroundColor3 = colorRedWarning
+			else
 				stopFarm()
 				mainToggleBtn.Text = "START AUTOFARM [F6]"
 				mainToggleBtn.BackgroundColor3 = colorGreenActive
-			else
-				startFarm()
-				mainToggleBtn.Text = "STOP AUTOFARM [F6]"
-				mainToggleBtn.BackgroundColor3 = colorRedWarning
 			end
 		end
 	end)
 
-	print("GUI ULTIME V17 CHARGEE !")
+	-- Démarrage du thread de fond permanent pour le combat et les fonctions
+	runBackgroundLoop()
+
+	print("GUI ULTIME V18 CHARGEE !")
 end
 
 -- ============================================================
