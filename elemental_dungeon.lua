@@ -1686,14 +1686,12 @@ local function createUltimateGUI()
 	createToggleRow(pageTP, "Permanent Noclip", "rbxassetid://6034855071", "NoclipPermanent", 9)
 
 	createSectionHeader(pageTP, "PHYSICAL SPEEDS", 10)
-	createInputRow(pageTP, "Walk Speed (WS) :", "rbxassetid://6031768426", CONFIG.WalkSpeed, 11, function(box, text)
-		local val = tonumber(text)
-		if val and val >= 16 and val <= 150 then CONFIG.WalkSpeed = val else box.Text = tostring(CONFIG.WalkSpeed) end
+	createSliderRow(pageTP, "Walk Speed (WS) :", "rbxassetid://6031768426", CONFIG.WalkSpeed, 16, 150, 11, function(newVal)
+		CONFIG.WalkSpeed = newVal
 	end)
 
-	createInputRow(pageTP, "Jump Power (JP) :", "rbxassetid://6031768426", CONFIG.JumpPower, 12, function(box, text)
-		local val = tonumber(text)
-		if val and val >= 50 and val <= 250 then CONFIG.JumpPower = val else box.Text = tostring(CONFIG.JumpPower) end
+	createSliderRow(pageTP, "Jump Power (JP) :", "rbxassetid://6031768426", CONFIG.JumpPower, 50, 250, 12, function(newVal)
+		CONFIG.JumpPower = newVal
 	end)
 
 
