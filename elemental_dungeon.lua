@@ -1,6 +1,6 @@
 -- ======================================================
--- AUTOFARM ULTIME – VERSION GUI V15 (GAME OFFICIAL 3-COLUMN LAYOUT)
--- Style officiel "Dungeon Creator" - Format Paysage, FredokaOne, Zéro Emojis, Tout en Anglais
+-- AUTOFARM ULTIME – VERSION GUI V16 (TABBED GAME THEMED)
+-- Style officiel "Dungeon Creator" - Format Paysage, FredokaOne, Titre "Elemental Dungeon", Tout en Anglais
 -- ======================================================
 
 repeat
@@ -81,7 +81,7 @@ local function scanDungeons()
 end
 
 local DUNGEONS_LIST = scanDungeons()
-local DIFFICULTIES_LIST = { "Easy", "Medium", "Hard", "Hell" } -- Updated to match screenshot
+local DIFFICULTIES_LIST = { "Easy", "Medium", "Hard", "Hell" }
 
 -- ============================================================
 -- 6. SCAN DES ARMES ET COMPÉTENCES
@@ -578,7 +578,7 @@ function startFarm()
 end
 
 -- ============================================================
--- 11. CRÉATION DE L'INTERFACE AU STYLE OFFICIEL 3 COLONNES
+-- 11. CRÉATION DE L'INTERFACE AU STYLE OFFICIEL DU JEU (V16)
 -- ============================================================
 
 local function animateColor(guiObject, property, targetColor, duration)
@@ -592,21 +592,22 @@ local function createUltimateGUI()
 	screenGui.ResetOnSpawn = false
 	screenGui.Parent = CoreGui
 
-	-- Dark Slate Blue color scheme (Roblox Dungeon Creator UI)
-	local colorSlateBackground = Color3.fromRGB(36, 50, 67)  -- Main background
-	local colorSlatePanel = Color3.fromRGB(24, 38, 51)       -- Dark inner panel boxes
-	local colorBorderDark = Color3.fromRGB(15, 22, 30)       -- Black outline
-	local colorTextWhite = Color3.fromRGB(255, 255, 255)     -- Plain white text
+	-- Palette de couleurs inspirée du Dungeon Creator (Bleu ardoise et contours noirs)
+	local colorSlateBackground = Color3.fromRGB(36, 50, 67)  -- Fond principal
+	local colorSlateSidebar = Color3.fromRGB(24, 38, 51)     -- Sidebar & sous-panels
+	local colorBorderDark = Color3.fromRGB(15, 22, 30)       -- Contour noir épais
+	local colorTextWhite = Color3.fromRGB(255, 255, 255)     -- Texte blanc
+	local colorTextInactive = Color3.fromRGB(150, 175, 195)  -- Texte désactivé
 	
-	-- Button gradients (Fredoka style)
-	local colorGreenActive = Color3.fromRGB(0, 200, 80)      -- Easy/Create Green
-	local colorRedWarning = Color3.fromRGB(220, 50, 50)      -- Exit/Back Red
-	local colorBlueSelect = Color3.fromRGB(40, 130, 220)     -- Option Blue
+	-- Couleurs des boutons (Gradients du jeu)
+	local colorGreenActive = Color3.fromRGB(0, 200, 80)      -- Bouton vert (Démarrer)
+	local colorRedWarning = Color3.fromRGB(220, 50, 50)      -- Bouton rouge (Quitter / Fermer)
+	local colorBlueSelect = Color3.fromRGB(40, 130, 220)     -- Bouton bleu (Medium / Options)
 
-	-- Main Window (Format Paysage 780x450)
+	-- Frame principal (Format Paysage 620x420)
 	local mainFrame = Instance.new("Frame")
-	mainFrame.Size = UDim2.new(0, 780, 0, 450)
-	mainFrame.Position = UDim2.new(0.5, -390, 0.5, -225)
+	mainFrame.Size = UDim2.new(0, 620, 0, 420)
+	mainFrame.Position = UDim2.new(0.5, -310, 0.5, -210)
 	mainFrame.BackgroundColor3 = colorSlateBackground
 	mainFrame.BorderSizePixel = 0
 	mainFrame.Active = true
@@ -614,7 +615,7 @@ local function createUltimateGUI()
 	mainFrame.ClipsDescendants = true
 	mainFrame.Parent = screenGui
 
-	-- Thick black 3D border outline
+	-- Contour 3D épais noir
 	local border = Instance.new("UIStroke")
 	border.Thickness = 3
 	border.Color = colorBorderDark
@@ -625,14 +626,14 @@ local function createUltimateGUI()
 	corner.CornerRadius = UDim.new(0, 16)
 	corner.Parent = mainFrame
 
-	-- Window Title: "Dungeon Creator"
+	-- Titre : "Elemental Dungeon"
 	local titleText = Instance.new("TextLabel")
-	titleText.Size = UDim2.new(0.5, 0, 0, 45)
+	titleText.Size = UDim2.new(0.65, 0, 0, 45)
 	titleText.Position = UDim2.new(0, 16, 0, 0)
 	titleText.BackgroundTransparency = 1
-	titleText.Text = "Dungeon Creator"
+	titleText.Text = "Elemental Dungeon"
 	titleText.TextColor3 = colorTextWhite
-	titleText.TextSize = 22
+	titleText.TextSize = 18
 	titleText.Font = Enum.Font.FredokaOne
 	
 	local titleStroke = Instance.new("UIStroke")
@@ -641,7 +642,7 @@ local function createUltimateGUI()
 	titleStroke.Parent = titleText
 	titleText.Parent = mainFrame
 
-	-- Red round Close Button (Top Right)
+	-- Gros bouton Fermer Windows circulaire rouge (Top Right)
 	local closeBtn = Instance.new("TextButton")
 	closeBtn.Size = UDim2.new(0, 28, 0, 28)
 	closeBtn.Position = UDim2.new(1, -38, 0, 8)
@@ -652,7 +653,7 @@ local function createUltimateGUI()
 	closeBtn.Font = Enum.Font.FredokaOne
 	
 	local closeCorner = Instance.new("UICorner")
-	closeCorner.CornerRadius = UDim.new(0.5, 0)
+	closeCorner.CornerRadius = UDim.new(0.5, 0) -- Rond
 	closeCorner.Parent = closeBtn
 
 	local closeStroke = Instance.new("UIStroke")
@@ -683,37 +684,172 @@ local function createUltimateGUI()
 		screenGui:Destroy()
 	end)
 
-	-- ============================================
-	-- HELPER WIDGETS
-	-- ============================================
-	local function createSectionHeader(parent, text)
+	-- Sidebar (Panneau d'onglets vertical à gauche)
+	local sidebar = Instance.new("Frame")
+	sidebar.Size = UDim2.new(0, 135, 1, -55)
+	sidebar.Position = UDim2.new(0, 10, 0, 45)
+	sidebar.BackgroundColor3 = colorSlateSidebar
+	sidebar.BorderSizePixel = 0
+	sidebar.Parent = mainFrame
+
+	local sidebarCorner = Instance.new("UICorner")
+	sidebarCorner.CornerRadius = UDim.new(0, 12)
+	sidebarCorner.Parent = sidebar
+
+	local sidebarStroke = Instance.new("UIStroke")
+	sidebarStroke.Thickness = 2
+	sidebarStroke.Color = colorBorderDark
+	sidebarStroke.Parent = sidebar
+
+	local sidebarLayout = Instance.new("UIListLayout")
+	sidebarLayout.Padding = UDim.new(0, 6)
+	sidebarLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	sidebarLayout.Parent = sidebar
+
+	local sidebarPad = Instance.new("UIPadding")
+	sidebarPad.PaddingTop = UDim.new(0, 6)
+	sidebarPad.PaddingBottom = UDim.new(0, 6)
+	sidebarPad.PaddingLeft = UDim.new(0, 6)
+	sidebarPad.PaddingRight = UDim.new(0, 6)
+	sidebarPad.Parent = sidebar
+
+	-- Conteneur de pages à droite
+	local pageContainer = Instance.new("Frame")
+	pageContainer.Size = UDim2.new(1, -165, 1, -55)
+	pageContainer.Position = UDim2.new(0, 155, 0, 45)
+	pageContainer.BackgroundTransparency = 1
+	pageContainer.Parent = mainFrame
+
+	local pages = {}
+	local tabButtons = {}
+
+	-- Helper de création de ScrollingFrame
+	local function createTabPage(name)
+		local scroll = Instance.new("ScrollingFrame")
+		scroll.Size = UDim2.new(1, 0, 1, 0)
+		scroll.BackgroundTransparency = 1
+		scroll.ScrollBarThickness = 6
+		scroll.ScrollBarImageColor3 = colorBlueSelect
+		scroll.Visible = false
+		scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+		scroll.Parent = pageContainer
+
+		local list = Instance.new("UIListLayout")
+		list.Padding = UDim.new(0, 8)
+		list.SortOrder = Enum.SortOrder.LayoutOrder
+		list.Parent = scroll
+
+		list:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+			scroll.CanvasSize = UDim2.new(0, 0, 0, list.AbsoluteContentSize.Y + 15)
+		end)
+
+		local pad = Instance.new("UIPadding")
+		pad.PaddingTop = UDim.new(0, 2)
+		pad.PaddingBottom = UDim.new(0, 10)
+		pad.PaddingLeft = UDim.new(0, 4)
+		pad.PaddingRight = UDim.new(0, 10)
+		pad.Parent = scroll
+
+		pages[name] = scroll
+		return scroll
+	end
+
+	-- Initialisation des pages
+	local pageStatus = createTabPage("Status")
+	local pageCombat = createTabPage("Combat")
+	local pageTP = createTabPage("TP")
+	local pageDungeon = createTabPage("Dungeon")
+	local pageSystem = createTabPage("System")
+
+	-- Navigation switch
+	local function selectTab(tabName)
+		for name, page in pairs(pages) do
+			page.Visible = (name == tabName)
+		end
+		for name, btn in pairs(tabButtons) do
+			if name == tabName then
+				btn.BackgroundColor3 = colorSlateBackground
+				btn.IconLabel.ImageColor3 = colorTextWhite
+				btn.TextLabel.TextColor3 = colorTextWhite
+				btn.TextLabel.Font = Enum.Font.FredokaOne
+			else
+				btn.BackgroundColor3 = colorSlateSidebar
+				btn.IconLabel.ImageColor3 = colorTextInactive
+				btn.TextLabel.TextColor3 = colorTextInactive
+				btn.TextLabel.Font = Enum.Font.FredokaOne
+			end
+		end
+	end
+
+	-- Créateur de boutons d'onglets verticaux
+	local function createTabButton(name, iconId, text, layoutOrder)
+		local btn = Instance.new("TextButton")
+		btn.Size = UDim2.new(1, 0, 0, 36)
+		btn.BackgroundColor3 = colorSlateSidebar
+		btn.BorderSizePixel = 0
+		btn.Text = ""
+		btn.LayoutOrder = layoutOrder
+		btn.Parent = sidebar
+
+		local btnCorner = Instance.new("UICorner")
+		btnCorner.CornerRadius = UDim.new(0, 8)
+		btnCorner.Parent = btn
+
+		local icon = Instance.new("ImageLabel")
+		icon.Size = UDim2.new(0, 14, 0, 14)
+		icon.Position = UDim2.new(0, 8, 0.5, -7)
+		icon.BackgroundTransparency = 1
+		icon.Image = iconId
+		icon.ImageColor3 = colorTextInactive
+		icon.Name = "IconLabel"
+		icon.Parent = btn
+
 		local lbl = Instance.new("TextLabel")
-		lbl.Size = UDim2.new(1, 0, 0, 24)
+		lbl.Size = UDim2.new(1, -30, 1, 0)
+		lbl.Position = UDim2.new(0, 30, 0, 0)
 		lbl.BackgroundTransparency = 1
 		lbl.Text = text
-		lbl.TextColor3 = colorTextWhite
-		lbl.TextSize = 12
+		lbl.TextColor3 = colorTextInactive
+		lbl.TextSize = 11
 		lbl.Font = Enum.Font.FredokaOne
+		lbl.TextXAlignment = Enum.TextXAlignment.Left
 		
 		local labelStroke = Instance.new("UIStroke")
 		labelStroke.Thickness = 1
 		labelStroke.Color = Color3.fromRGB(0, 0, 0)
 		labelStroke.Parent = lbl
-		return lbl
+		lbl.Name = "TextLabel"
+		lbl.Parent = btn
+
+		btn.MouseButton1Click:Connect(function()
+			selectTab(name)
+		end)
+
+		tabButtons[name] = btn
 	end
 
-	local function createToggleRow(parent, label, iconId, configKey, callback)
+	createTabButton("Status", "rbxassetid://6031768426", "Status", 1)
+	createTabButton("Combat", "rbxassetid://6035043132", "Combat", 2)
+	createTabButton("TP", "rbxassetid://6034855071", "Movement", 3)
+	createTabButton("Dungeon", "rbxassetid://6034287517", "Dungeon", 4)
+	createTabButton("System", "rbxassetid://6031289116", "System", 5)
+
+	-- ============================================
+	-- HELPER CREATORS FOR ITEMS
+	-- ============================================
+	local function createToggleRow(parent, label, iconId, configKey, layoutOrder)
 		local frame = Instance.new("Frame")
-		frame.Size = UDim2.new(1, 0, 0, 32)
+		frame.Size = UDim2.new(1, 0, 0, 34)
 		frame.BackgroundTransparency = 1
+		frame.LayoutOrder = layoutOrder
 
 		local btn = Instance.new("TextButton")
-		btn.Size = UDim2.new(0, 20, 0, 20)
-		btn.Position = UDim2.new(0, 4, 0.5, -10)
-		btn.BackgroundColor3 = CONFIG[configKey] and colorGreenActive or colorSlateBackground
+		btn.Size = UDim2.new(0, 22, 0, 22)
+		btn.Position = UDim2.new(0, 4, 0.5, -11)
+		btn.BackgroundColor3 = CONFIG[configKey] and colorGreenActive or colorSlateSidebar
 		btn.Text = CONFIG[configKey] and "✓" or ""
 		btn.TextColor3 = colorTextWhite
-		btn.TextSize = 11
+		btn.TextSize = 12
 		btn.Font = Enum.Font.FredokaOne
 		
 		local btnCorner = Instance.new("UICorner")
@@ -721,26 +857,34 @@ local function createUltimateGUI()
 		btnCorner.Parent = btn
 		
 		local btnStroke = Instance.new("UIStroke")
-		btnStroke.Thickness = 1.5
+		btnStroke.Thickness = 2
 		btnStroke.Color = colorBorderDark
 		btnStroke.Parent = btn
 		btn.Parent = frame
 
+		local gradient = Instance.new("UIGradient")
+		gradient.Rotation = 90
+		gradient.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 200, 200))
+		})
+		gradient.Parent = btn
+
 		local icon = Instance.new("ImageLabel")
 		icon.Size = UDim2.new(0, 14, 0, 14)
-		icon.Position = UDim2.new(0, 32, 0.5, -7)
+		icon.Position = UDim2.new(0, 36, 0.5, -7)
 		icon.BackgroundTransparency = 1
 		icon.Image = iconId
 		icon.ImageColor3 = CONFIG[configKey] and colorGreenActive or colorTextInactive
 		icon.Parent = frame
 
 		local lbl = Instance.new("TextLabel")
-		lbl.Size = UDim2.new(1, -52, 1, 0)
-		lbl.Position = UDim2.new(0, 52, 0, 0)
+		lbl.Size = UDim2.new(1, -56, 1, 0)
+		lbl.Position = UDim2.new(0, 56, 0, 0)
 		lbl.BackgroundTransparency = 1
 		lbl.Text = label
 		lbl.TextColor3 = colorTextWhite
-		lbl.TextSize = 10
+		lbl.TextSize = 11
 		lbl.TextXAlignment = Enum.TextXAlignment.Left
 		lbl.Font = Enum.Font.GothamBold
 		
@@ -752,25 +896,25 @@ local function createUltimateGUI()
 
 		btn.MouseButton1Click:Connect(function()
 			CONFIG[configKey] = not CONFIG[configKey]
-			animateColor(btn, "BackgroundColor3", CONFIG[configKey] and colorGreenActive or colorSlateBackground)
+			animateColor(btn, "BackgroundColor3", CONFIG[configKey] and colorGreenActive or colorSlateSidebar)
 			icon.ImageColor3 = CONFIG[configKey] and colorGreenActive or colorTextInactive
 			btn.Text = CONFIG[configKey] and "✓" or ""
-			if callback then callback(CONFIG[configKey]) end
 		end)
 
 		frame.Parent = parent
 		return frame
 	end
 
-	local function createDropdownRow(parent, label, iconId, initialValue, options, callback)
+	local function createDropdownRow(parent, label, iconId, initialValue, options, layoutOrder, callback)
 		local isOpened = false
-		local itemHeight = 24
-		local dropdownRowHeight = 32
+		local itemHeight = 26
+		local dropdownRowHeight = 34
 
 		local frame = Instance.new("Frame")
 		frame.Size = UDim2.new(1, 0, 0, dropdownRowHeight)
 		frame.BackgroundTransparency = 1
 		frame.ClipsDescendants = true
+		frame.LayoutOrder = layoutOrder
 
 		local topRow = Instance.new("Frame")
 		topRow.Size = UDim2.new(1, 0, 0, dropdownRowHeight)
@@ -791,7 +935,7 @@ local function createUltimateGUI()
 		lbl.BackgroundTransparency = 1
 		lbl.Text = label
 		lbl.TextColor3 = colorTextWhite
-		lbl.TextSize = 10
+		lbl.TextSize = 11
 		lbl.TextXAlignment = Enum.TextXAlignment.Left
 		lbl.Font = Enum.Font.GothamBold
 		
@@ -802,38 +946,46 @@ local function createUltimateGUI()
 		lbl.Parent = topRow
 
 		local btn = Instance.new("TextButton")
-		btn.Size = UDim2.new(0.5, 0, 0, 24)
-		btn.Position = UDim2.new(0.5, 0, 0.5, -12)
-		btn.BackgroundColor3 = colorSlateBackground
+		btn.Size = UDim2.new(0.5, 0, 0, 26)
+		btn.Position = UDim2.new(0.5, 0, 0.5, -13)
+		btn.BackgroundColor3 = colorSlateSidebar
 		btn.Text = tostring(initialValue) .. "  ▼"
 		btn.TextColor3 = colorTextWhite
-		btn.TextSize = 10
+		btn.TextSize = 11
 		btn.Font = Enum.Font.FredokaOne
 		
 		local btnCorner = Instance.new("UICorner")
-		btnCorner.CornerRadius = UDim.new(0, 6)
+		btnCorner.CornerRadius = UDim.new(0, 8)
 		btnCorner.Parent = btn
 		
 		local btnStroke = Instance.new("UIStroke")
-		btnStroke.Thickness = 1.5
+		btnStroke.Thickness = 2
 		btnStroke.Color = colorBorderDark
 		btnStroke.Parent = btn
+
+		local gradient = Instance.new("UIGradient")
+		gradient.Rotation = 90
+		gradient.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(190, 190, 190))
+		})
+		gradient.Parent = btn
 		btn.Parent = topRow
 
 		local optionsListFrame = Instance.new("Frame")
 		optionsListFrame.Size = UDim2.new(0.5, 0, 0, 0)
 		optionsListFrame.Position = UDim2.new(0.5, 0, 0, dropdownRowHeight)
-		optionsListFrame.BackgroundColor3 = colorSlateBackground
+		optionsListFrame.BackgroundColor3 = colorSlateSidebar
 		optionsListFrame.BorderSizePixel = 0
 		optionsListFrame.Visible = false
 		optionsListFrame.Parent = frame
 
 		local opCorner = Instance.new("UICorner")
-		opCorner.CornerRadius = UDim.new(0, 6)
+		opCorner.CornerRadius = UDim.new(0, 8)
 		opCorner.Parent = optionsListFrame
 
 		local opStroke = Instance.new("UIStroke")
-		opStroke.Thickness = 1.5
+		opStroke.Thickness = 2
 		opStroke.Color = colorBorderDark
 		opStroke.Parent = optionsListFrame
 
@@ -853,7 +1005,7 @@ local function createUltimateGUI()
 				optBtn.BackgroundTransparency = 1
 				optBtn.Text = tostring(option)
 				optBtn.TextColor3 = colorTextWhite
-				optBtn.TextSize = 9
+				optBtn.TextSize = 10
 				optBtn.Font = Enum.Font.FredokaOne
 				optBtn.LayoutOrder = idx
 				
@@ -888,7 +1040,7 @@ local function createUltimateGUI()
 			isOpened = not isOpened
 			if isOpened then
 				optionsListFrame.Visible = true
-				local totalHeight = listLayout.AbsoluteContentSize.Y + 4
+				local totalHeight = listLayout.AbsoluteContentSize.Y + 8
 				optionsListFrame.Size = UDim2.new(0.5, 0, 0, totalHeight)
 				frame:TweenSize(UDim2.new(1, 0, 0, dropdownRowHeight + totalHeight + 4), "Out", "Quad", 0.15, true)
 			else
@@ -901,10 +1053,11 @@ local function createUltimateGUI()
 		return frame
 	end
 
-	local function createSliderRow(parent, label, iconId, initialValue, min, max, callback)
+	local function createSliderRow(parent, label, iconId, initialValue, min, max, layoutOrder, callback)
 		local frame = Instance.new("Frame")
-		frame.Size = UDim2.new(1, 0, 0, 32)
+		frame.Size = UDim2.new(1, 0, 0, 36)
 		frame.BackgroundTransparency = 1
+		frame.LayoutOrder = layoutOrder
 
 		local icon = Instance.new("ImageLabel")
 		icon.Size = UDim2.new(0, 14, 0, 14)
@@ -920,7 +1073,7 @@ local function createUltimateGUI()
 		lbl.BackgroundTransparency = 1
 		lbl.Text = label
 		lbl.TextColor3 = colorTextWhite
-		lbl.TextSize = 10
+		lbl.TextSize = 11
 		lbl.TextXAlignment = Enum.TextXAlignment.Left
 		lbl.Font = Enum.Font.GothamBold
 		
@@ -932,18 +1085,18 @@ local function createUltimateGUI()
 
 		-- Track
 		local track = Instance.new("Frame")
-		track.Size = UDim2.new(0.32, 0, 0, 6)
-		track.Position = UDim2.new(0.42, 0, 0.5, -3)
-		track.BackgroundColor3 = colorSlateBackground
+		track.Size = UDim2.new(0.32, 0, 0, 8)
+		track.Position = UDim2.new(0.42, 0, 0.5, -4)
+		track.BackgroundColor3 = colorSlateSidebar
 		track.BorderSizePixel = 0
 		track.Parent = frame
 
 		local trackCorner = Instance.new("UICorner")
-		trackCorner.CornerRadius = UDim.new(0, 3)
+		trackCorner.CornerRadius = UDim.new(0, 4)
 		trackCorner.Parent = track
 
 		local trackStroke = Instance.new("UIStroke")
-		trackStroke.Thickness = 1.5
+		trackStroke.Thickness = 2
 		trackStroke.Color = colorBorderDark
 		trackStroke.Parent = track
 
@@ -955,13 +1108,13 @@ local function createUltimateGUI()
 		fill.Parent = track
 
 		local fillCorner = Instance.new("UICorner")
-		fillCorner.CornerRadius = UDim.new(0, 3)
+		fillCorner.CornerRadius = UDim.new(0, 4)
 		fillCorner.Parent = fill
 
 		-- Thumb
 		local thumb = Instance.new("TextButton")
-		thumb.Size = UDim2.new(0, 14, 0, 14)
-		thumb.Position = UDim2.new((initialValue - min) / (max - min), -7, 0.5, -7)
+		thumb.Size = UDim2.new(0, 16, 0, 16)
+		thumb.Position = UDim2.new((initialValue - min) / (max - min), -8, 0.5, -8)
 		thumb.BackgroundColor3 = colorTextWhite
 		thumb.Text = ""
 		thumb.Parent = track
@@ -971,18 +1124,18 @@ local function createUltimateGUI()
 		thumbCorner.Parent = thumb
 
 		local thumbStroke = Instance.new("UIStroke")
-		thumbStroke.Thickness = 1.5
+		thumbStroke.Thickness = 2
 		thumbStroke.Color = colorBorderDark
 		thumbStroke.Parent = thumb
 
 		-- TextBox
 		local box = Instance.new("TextBox")
-		box.Size = UDim2.new(0.18, 0, 0, 24)
-		box.Position = UDim2.new(0.8, 0, 0.5, -12)
-		box.BackgroundColor3 = colorSlateBackground
+		box.Size = UDim2.new(0.18, 0, 0, 26)
+		box.Position = UDim2.new(0.8, 0, 0.5, -13)
+		box.BackgroundColor3 = colorSlateSidebar
 		box.Text = tostring(initialValue)
 		box.TextColor3 = colorTextWhite
-		box.TextSize = 10
+		box.TextSize = 11
 		box.Font = Enum.Font.FredokaOne
 		
 		local boxCorner = Instance.new("UICorner")
@@ -990,7 +1143,7 @@ local function createUltimateGUI()
 		boxCorner.Parent = box
 
 		local boxStroke = Instance.new("UIStroke")
-		boxStroke.Thickness = 1.5
+		boxStroke.Thickness = 2
 		boxStroke.Color = colorBorderDark
 		boxStroke.Parent = box
 		box.Parent = frame
@@ -1003,7 +1156,7 @@ local function createUltimateGUI()
 			local rawVal = min + (max - min) * percentage
 			local val = math.floor(rawVal * 10 + 0.5) / 10
 			fill.Size = UDim2.new(percentage, 0, 1, 0)
-			thumb.Position = UDim2.new(percentage, -7, 0.5, -7)
+			thumb.Position = UDim2.new(percentage, -8, 0.5, -8)
 			box.Text = tostring(val)
 			callback(val)
 		end
@@ -1045,10 +1198,11 @@ local function createUltimateGUI()
 		return frame
 	end
 
-	local function createInputRow(parent, label, iconId, initialValue, callback)
+	local function createInputRow(parent, label, iconId, initialValue, layoutOrder, callback)
 		local frame = Instance.new("Frame")
-		frame.Size = UDim2.new(1, 0, 0, 32)
+		frame.Size = UDim2.new(1, 0, 0, 34)
 		frame.BackgroundTransparency = 1
+		frame.LayoutOrder = layoutOrder
 		
 		local icon = Instance.new("ImageLabel")
 		icon.Size = UDim2.new(0, 14, 0, 14)
@@ -1064,7 +1218,7 @@ local function createUltimateGUI()
 		lbl.BackgroundTransparency = 1
 		lbl.Text = label
 		lbl.TextColor3 = colorTextWhite
-		lbl.TextSize = 10
+		lbl.TextSize = 11
 		lbl.TextXAlignment = Enum.TextXAlignment.Left
 		lbl.Font = Enum.Font.GothamBold
 		
@@ -1075,20 +1229,20 @@ local function createUltimateGUI()
 		lbl.Parent = frame
 
 		local input = Instance.new("TextBox")
-		input.Size = UDim2.new(0.5, 0, 0, 24)
-		input.Position = UDim2.new(0.5, 0, 0.5, -12)
-		input.BackgroundColor3 = colorSlateBackground
+		input.Size = UDim2.new(0.5, 0, 0, 26)
+		input.Position = UDim2.new(0.5, 0, 0.5, -13)
+		input.BackgroundColor3 = colorSlateSidebar
 		input.Text = tostring(initialValue)
 		input.TextColor3 = colorTextWhite
-		input.TextSize = 10
+		input.TextSize = 11
 		input.Font = Enum.Font.FredokaOne
 		
 		local cornerInput = Instance.new("UICorner")
-		cornerInput.CornerRadius = UDim.new(0, 6)
+		cornerInput.CornerRadius = UDim.new(0, 8)
 		cornerInput.Parent = input
 
 		local strokeInput = Instance.new("UIStroke")
-		strokeInput.Thickness = 1.5
+		strokeInput.Thickness = 2
 		strokeInput.Color = colorBorderDark
 		strokeInput.Parent = input
 		input.Parent = frame
@@ -1101,92 +1255,35 @@ local function createUltimateGUI()
 		return frame
 	end
 
-	-- ============================================================
-	-- PANELS / COLUMNS LAYOUT (3 COLUMNS)
-	-- ============================================================
-	
-	-- Helper: Create Box Panel Frame
-	local function createPanel(xPos, width, titleTextStr)
-		local panel = Instance.new("Frame")
-		panel.Size = UDim2.new(0, width, 1, -65)
-		panel.Position = UDim2.new(0, xPos, 0, 50)
-		panel.BackgroundColor3 = colorSlatePanel
-		panel.BorderSizePixel = 0
-		panel.Parent = mainFrame
-
-		local panelCorner = Instance.new("UICorner")
-		panelCorner.CornerRadius = UDim.new(0, 12)
-		panelCorner.Parent = panel
-
-		local panelStroke = Instance.new("UIStroke")
-		panelStroke.Thickness = 2
-		panelStroke.Color = colorBorderDark
-		panelStroke.Parent = panel
-
-		-- Panel Header textless but has a clean title label inside
-		local head = Instance.new("TextLabel")
-		head.Size = UDim2.new(1, 0, 0, 28)
-		head.Position = UDim2.new(0, 0, 0, 4)
-		head.BackgroundTransparency = 1
-		head.Text = titleTextStr
-		head.TextColor3 = colorBlueSelect
-		head.TextSize = 13
-		head.Font = Enum.Font.FredokaOne
-		
-		local headStroke = Instance.new("UIStroke")
-		headStroke.Thickness = 1.2
-		headStroke.Color = Color3.fromRGB(0, 0, 0)
-		headStroke.Parent = head
-		head.Parent = panel
-
-		-- Content ScrollFrame inside the panel to support scrolling options
-		local scroll = Instance.new("ScrollingFrame")
-		scroll.Size = UDim2.new(1, -12, 1, -38)
-		scroll.Position = UDim2.new(0, 6, 0, 32)
-		scroll.BackgroundTransparency = 1
-		scroll.ScrollBarThickness = 4
-		scroll.ScrollBarImageColor3 = colorBlueSelect
-		scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-		scroll.Parent = panel
-
-		local list = Instance.new("UIListLayout")
-		list.Padding = UDim.new(0, 6)
-		list.SortOrder = Enum.SortOrder.LayoutOrder
-		list.Parent = scroll
-
-		list:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-			scroll.CanvasSize = UDim2.new(0, 0, 0, list.AbsoluteContentSize.Y + 10)
-		end)
-
-		local pad = Instance.new("UIPadding")
-		pad.PaddingTop = UDim.new(0, 2)
-		pad.PaddingBottom = UDim.new(0, 8)
-		pad.PaddingLeft = UDim.new(0, 4)
-		pad.PaddingRight = UDim.new(0, 8)
-		pad.Parent = scroll
-
-		return scroll
+	local function createSectionHeader(parent, text, layoutOrder)
+		local lbl = Instance.new("TextLabel")
+		lbl.Size = UDim2.new(1, 0, 0, 28)
+		lbl.BackgroundTransparency = 1
+		lbl.Text = "──  " .. text .. "  ──"
+		lbl.TextColor3 = colorBlueSelect
+		lbl.TextSize = 10
+		lbl.Font = Enum.Font.FredokaOne
+		lbl.TextXAlignment = Enum.TextXAlignment.Left
+		lbl.LayoutOrder = layoutOrder
+		lbl.Parent = parent
 	end
 
-	-- Create the 3 Columns
-	local colDungeon = createPanel(15, 240, "Dungeon Settings")
-	local colCombat = createPanel(270, 240, "Combat & Spells")
-	local colMovement = createPanel(525, 240, "Movement & Loots")
+	-- ============================================
+	-- PAGES CONTENTS DEFINITIONS (RESTORED BY SECTIONS)
+	-- ============================================
 
-	-- ============================================
-	-- COLUMN 1: DUNGEON SETTINGS & CONTROLS
-	-- ============================================
+	-- 1. STATUS TAB
 	local mainToggleBtn = Instance.new("TextButton")
-	mainToggleBtn.Size = UDim2.new(1, 0, 0, 42)
+	mainToggleBtn.Size = UDim2.new(1, 0, 0, 45)
 	mainToggleBtn.BackgroundColor3 = colorGreenActive
 	mainToggleBtn.Text = "START AUTOFARM [F6]"
 	mainToggleBtn.TextColor3 = colorTextWhite
-	mainToggleBtn.TextSize = 12
+	mainToggleBtn.TextSize = 13
 	mainToggleBtn.Font = Enum.Font.FredokaOne
 	mainToggleBtn.LayoutOrder = 1
 	
 	local toggleCornerStatus = Instance.new("UICorner")
-	toggleCornerStatus.CornerRadius = UDim.new(0, 8)
+	toggleCornerStatus.CornerRadius = UDim.new(0, 10)
 	toggleCornerStatus.Parent = mainToggleBtn
 	
 	local toggleStroke = Instance.new("UIStroke")
@@ -1201,7 +1298,7 @@ local function createUltimateGUI()
 		ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 180, 180))
 	})
 	toggleGrad.Parent = mainToggleBtn
-	mainToggleBtn.Parent = colDungeon
+	mainToggleBtn.Parent = pageStatus
 
 	mainToggleBtn.MouseEnter:Connect(function()
 		animateColor(mainToggleBtn, "BackgroundColor3", isRunning and Color3.fromRGB(255, 80, 80) or Color3.fromRGB(40, 220, 110))
@@ -1224,28 +1321,28 @@ local function createUltimateGUI()
 
 	-- Stats Card
 	local statusStatsFrame = Instance.new("Frame")
-	statusStatsFrame.Size = UDim2.new(1, 0, 0, 100)
-	statusStatsFrame.BackgroundColor3 = colorSlateBackground
+	statusStatsFrame.Size = UDim2.new(1, 0, 0, 110)
+	statusStatsFrame.BackgroundColor3 = colorSlateSidebar
 	statusStatsFrame.BorderSizePixel = 0
 	statusStatsFrame.LayoutOrder = 2
 	
 	local statusStatsCorner = Instance.new("UICorner")
-	statusStatsCorner.CornerRadius = UDim.new(0, 8)
+	statusStatsCorner.CornerRadius = UDim.new(0, 10)
 	statusStatsCorner.Parent = statusStatsFrame
 
 	local cardStroke = Instance.new("UIStroke")
-	cardStroke.Thickness = 1.5
+	cardStroke.Thickness = 2
 	cardStroke.Color = colorBorderDark
 	cardStroke.Parent = statusStatsFrame
 
 	local statusStatsLabel = Instance.new("TextLabel")
-	statusStatsLabel.Size = UDim2.new(1, -16, 1, -16)
-	statusStatsLabel.Position = UDim2.new(0, 8, 0, 8)
+	statusStatsLabel.Size = UDim2.new(1, -20, 1, -20)
+	statusStatsLabel.Position = UDim2.new(0, 10, 0, 10)
 	statusStatsLabel.BackgroundTransparency = 1
 	statusStatsLabel.Text = "Kills : 0\nRetries : 0\nSession Time : 00:00\nLoots : 0 | Sold : 0"
 	statusStatsLabel.TextColor3 = colorTextWhite
-	statusStatsLabel.TextSize = 11
-	statusStatsLabel.LineHeight = 1.3
+	statusStatsLabel.TextSize = 12
+	statusStatsLabel.LineHeight = 1.35
 	statusStatsLabel.TextXAlignment = Enum.TextXAlignment.Left
 	statusStatsLabel.TextYAlignment = Enum.TextYAlignment.Top
 	statusStatsLabel.Font = Enum.Font.FredokaOne
@@ -1255,68 +1352,51 @@ local function createUltimateGUI()
 	statsStroke.Color = Color3.fromRGB(0, 0, 0)
 	statsStroke.Parent = statusStatsLabel
 	statusStatsLabel.Parent = statusStatsFrame
-	statusStatsFrame.Parent = colDungeon
+	statusStatsFrame.Parent = pageStatus
 
-	createSectionHeader(colDungeon, "Lobby Controls").LayoutOrder = 3
-	createDropdownRow(colDungeon, "Dungeon Name :", "rbxassetid://6034287517", CONFIG.DungeonName, DUNGEONS_LIST, function(newVal)
-		CONFIG.DungeonName = newVal
-	end).LayoutOrder = 4
+	createSectionHeader(pageStatus, "QUICK SETTINGS", 3)
+	createToggleRow(pageStatus, "Auto Attack Monsters", "rbxassetid://6035043132", "AutoAttack", 4)
+	createToggleRow(pageStatus, "Auto Collect Drops", "rbxassetid://6034287523", "AutoCollect", 5)
+	createToggleRow(pageStatus, "Auto Health Healing", "rbxassetid://6034287517", "AutoHeal", 6)
 
-	createDropdownRow(colDungeon, "Difficulty :", "rbxassetid://6034287517", CONFIG.Difficulty, DIFFICULTIES_LIST, function(newVal)
-		CONFIG.Difficulty = newVal
-	end).LayoutOrder = 5
-
-	createToggleRow(colDungeon, "Auto Join Lobby", "rbxassetid://6034855071", "AutoJoinDungeon").LayoutOrder = 6
-	createToggleRow(colDungeon, "Auto Retry Dungeon", "rbxassetid://6031768426", "AutoRetry").LayoutOrder = 7
-	createInputRow(colDungeon, "Retry Delay (s) :", "rbxassetid://6031768426", CONFIG.RetryDelay, function(box, text)
-		local val = tonumber(text)
-		if val and val >= 0 and val <= 15 then CONFIG.RetryDelay = val else box.Text = tostring(CONFIG.RetryDelay) end
-	end).LayoutOrder = 8
-
-	-- ============================================
-	-- COLUMN 2: COMBAT & SPELLS
-	-- ============================================
-	createSectionHeader(colCombat, "Logic & Gear Selection").LayoutOrder = 1
-	createToggleRow(colCombat, "Auto Attack Mobs", "rbxassetid://6035043132", "AutoAttack").LayoutOrder = 2
-	createToggleRow(colCombat, "Auto Cast Spells", "rbxassetid://6034287517", "AutoSkills").LayoutOrder = 3
-	createToggleRow(colCombat, "Auto Equip Gear", "rbxassetid://6035043132", "AutoEquip").LayoutOrder = 4
-
-	createDropdownRow(colCombat, "Equip Mode :", "rbxassetid://6031289116", CONFIG.EquipMode, {"Both", "Weapon Only", "Element Only", "None"}, function(newVal)
+	-- 2. COMBAT TAB (SECTIONS)
+	createSectionHeader(pageCombat, "GEAR SELECTION", 1)
+	createDropdownRow(pageCombat, "Equip Mode :", "rbxassetid://6031289116", CONFIG.EquipMode, {"Both", "Weapon Only", "Element Only", "None"}, 2, function(newVal)
 		CONFIG.EquipMode = newVal
-	end).LayoutOrder = 5
+	end)
 
 	local toolsList = getAvailableTools()
-	createDropdownRow(colCombat, "Main Weapon :", "rbxassetid://6035043132", CONFIG.SelectedWeapon, toolsList, function(newVal)
+	createDropdownRow(pageCombat, "Main Weapon :", "rbxassetid://6035043132", CONFIG.SelectedWeapon, toolsList, 3, function(newVal)
 		CONFIG.SelectedWeapon = newVal
-	end).LayoutOrder = 6
+	end)
 
-	createDropdownRow(colCombat, "Magic Element :", "rbxassetid://6034287517", CONFIG.SelectedElement, toolsList, function(newVal)
+	createDropdownRow(pageCombat, "Magic Element :", "rbxassetid://6034287517", CONFIG.SelectedElement, toolsList, 4, function(newVal)
 		CONFIG.SelectedElement = newVal
-	end).LayoutOrder = 7
+	end)
 
-	createSectionHeader(colCombat, "Attack Parameters").LayoutOrder = 8
-	createDropdownRow(colCombat, "Attack Mode :", "rbxassetid://6035043132", CONFIG.AttackMode, {"Sword & Skills", "Sword Only", "Skills Only"}, function(newVal)
+	createSectionHeader(pageCombat, "ATTACK LOGIC", 5)
+	createDropdownRow(pageCombat, "Attack Mode :", "rbxassetid://6035043132", CONFIG.AttackMode, {"Sword & Skills", "Sword Only", "Skills Only"}, 6, function(newVal)
 		CONFIG.AttackMode = newVal
-	end).LayoutOrder = 9
+	end)
 
-	createInputRow(colCombat, "Attack Delay Min (s) :", "rbxassetid://6031768426", CONFIG.SwingDelayMin, function(box, text)
+	createInputRow(pageCombat, "Attack Delay Min (s) :", "rbxassetid://6031768426", CONFIG.SwingDelayMin, 7, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 0.01 and val <= 2 then CONFIG.SwingDelayMin = val else box.Text = tostring(CONFIG.SwingDelayMin) end
-	end).LayoutOrder = 10
+	end)
 
-	createInputRow(colCombat, "Attack Delay Max (s) :", "rbxassetid://6031768426", CONFIG.SwingDelayMax, function(box, text)
+	createInputRow(pageCombat, "Attack Delay Max (s) :", "rbxassetid://6031768426", CONFIG.SwingDelayMax, 8, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 0.01 and val <= 2 then CONFIG.SwingDelayMax = val else box.Text = tostring(CONFIG.SwingDelayMax) end
-	end).LayoutOrder = 11
+	end)
 
-	createInputRow(colCombat, "Attack Range (studs) :", "rbxassetid://6034855071", CONFIG.MaxAttackDistance, function(box, text)
+	createInputRow(pageCombat, "Attack Range (studs) :", "rbxassetid://6034855071", CONFIG.MaxAttackDistance, 9, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 1 and val <= 50 then CONFIG.MaxAttackDistance = val else box.Text = tostring(CONFIG.MaxAttackDistance) end
-	end).LayoutOrder = 12
+	end)
 
-	createSectionHeader(colCombat, "Active Spell Slots").LayoutOrder = 13
+	createSectionHeader(pageCombat, "ACTIVE SPELL SKILLS", 10)
 	
-	local function createSkillsRow(parent, layoutOrder)
+	local function createSkillsRowCombat(parent, layoutOrder)
 		local frame = Instance.new("Frame")
 		frame.Size = UDim2.new(1, 0, 0, 36)
 		frame.BackgroundTransparency = 1
@@ -1334,9 +1414,9 @@ local function createUltimateGUI()
 		lbl.Size = UDim2.new(0.32, 0, 1, 0)
 		lbl.Position = UDim2.new(0, 24, 0, 0)
 		lbl.BackgroundTransparency = 1
-		lbl.Text = "Slots :"
+		lbl.Text = "Active Slots :"
 		lbl.TextColor3 = colorTextWhite
-		lbl.TextSize = 10
+		lbl.TextSize = 11
 		lbl.TextXAlignment = Enum.TextXAlignment.Left
 		lbl.Font = Enum.Font.GothamBold
 		
@@ -1348,22 +1428,22 @@ local function createUltimateGUI()
 
 		for slot = 1, 4 do
 			local btn = Instance.new("TextButton")
-			btn.Size = UDim2.new(0, 34, 0, 22)
-			btn.Position = UDim2.new(0.42 + (slot - 1) * 0.14, 0, 0.5, -11)
+			btn.Size = UDim2.new(0, 42, 0, 26)
+			btn.Position = UDim2.new(0.4 + (slot - 1) * 0.15, 0, 0.5, -13)
 			
 			local isActivated = table.find(CONFIG.SelectedSkills, slot) ~= nil
-			btn.BackgroundColor3 = isActivated and colorBlueSelect or colorSlateBackground
-			btn.Text = "S" .. slot
+			btn.BackgroundColor3 = isActivated and colorBlueSelect or colorSlateSidebar
+			btn.Text = "Slot " .. slot
 			btn.TextColor3 = colorTextWhite
-			btn.TextSize = 9
+			btn.TextSize = 10
 			btn.Font = Enum.Font.FredokaOne
 			
 			local cornerS = Instance.new("UICorner")
-			cornerS.CornerRadius = UDim.new(0, 5)
+			cornerS.CornerRadius = UDim.new(0, 6)
 			cornerS.Parent = btn
 
 			local strokeS = Instance.new("UIStroke")
-			strokeS.Thickness = 1.5
+			strokeS.Thickness = 2
 			strokeS.Color = colorBorderDark
 			strokeS.Parent = btn
 
@@ -1371,7 +1451,7 @@ local function createUltimateGUI()
 				local idx = table.find(CONFIG.SelectedSkills, slot)
 				if idx then
 					table.remove(CONFIG.SelectedSkills, idx)
-					animateColor(btn, "BackgroundColor3", colorSlateBackground)
+					animateColor(btn, "BackgroundColor3", colorSlateSidebar)
 				else
 					table.insert(CONFIG.SelectedSkills, slot)
 					table.sort(CONFIG.SelectedSkills)
@@ -1384,26 +1464,24 @@ local function createUltimateGUI()
 		frame.Parent = parent
 		return frame
 	end
-	createSkillsRow(colCombat, 14)
+	createSkillsRowCombat(pageCombat, 11)
 
-	createInputRow(colCombat, "Skill Cast Delay (s) :", "rbxassetid://6031768426", CONFIG.SkillDelay, function(box, text)
+	createInputRow(pageCombat, "Spell Cast Delay (s) :", "rbxassetid://6031768426", CONFIG.SkillDelay, 12, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 0 and val <= 10 then CONFIG.SkillDelay = val else box.Text = tostring(CONFIG.SkillDelay) end
-	end).LayoutOrder = 15
+	end)
 
-	-- ============================================
-	-- COLUMN 3: MOVEMENT & LOOTS
-	-- ============================================
-	createSectionHeader(colMovement, "Relative TP Position").LayoutOrder = 1
-	createDropdownRow(colMovement, "TP Position :", "rbxassetid://6034855071", CONFIG.TP_Position, {"Top", "Bottom", "Behind", "Front", "Left", "Right"}, function(newVal)
+	-- 3. MOVEMENT TAB (SECTIONS)
+	createSectionHeader(pageTP, "TWEENING & SAFETY", 1)
+	createDropdownRow(pageTP, "TP Position :", "rbxassetid://6034855071", CONFIG.TP_Position, {"Top", "Bottom", "Behind", "Front", "Left", "Right"}, 2, function(newVal)
 		CONFIG.TP_Position = newVal
-	end).LayoutOrder = 2
+	end)
 
-	createSliderRow(colMovement, "TP Distance :", "rbxassetid://6034855071", CONFIG.TP_Distance, 0, 25, function(newVal)
+	createSliderRow(pageTP, "Relative Distance :", "rbxassetid://6034855071", CONFIG.TP_Distance, 0, 25, 3, function(newVal)
 		CONFIG.TP_Distance = newVal
-	end).LayoutOrder = 3
+	end)
 
-	createInputRow(colMovement, "Manual Offset (X,Y,Z) :", "rbxassetid://6034855071", CONFIG.TP_Offset_X .. "," .. CONFIG.TP_Offset_Y .. "," .. CONFIG.TP_Offset_Z, function(box, text)
+	createInputRow(pageTP, "Manual Offset (X,Y,Z) :", "rbxassetid://6034855071", CONFIG.TP_Offset_X .. "," .. CONFIG.TP_Offset_Y .. "," .. CONFIG.TP_Offset_Z, 4, function(box, text)
 		local parts = {}
 		for part in text:gmatch("[^,]+") do table.insert(parts, tonumber(part)) end
 		if #parts == 3 then
@@ -1413,44 +1491,132 @@ local function createUltimateGUI()
 		else
 			box.Text = CONFIG.TP_Offset_X .. "," .. CONFIG.TP_Offset_Y .. "," .. CONFIG.TP_Offset_Z
 		end
-	end).LayoutOrder = 4
+	end)
 
-	createInputRow(colMovement, "Tween Speed (s/s) :", "rbxassetid://6031768426", CONFIG.TweenSpeed, function(box, text)
+	createInputRow(pageTP, "Tween Speed (s/s) :", "rbxassetid://6031768426", CONFIG.TweenSpeed, 5, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 10 and val <= 250 then CONFIG.TweenSpeed = val else box.Text = tostring(CONFIG.TweenSpeed) end
-	end).LayoutOrder = 5
+	end)
 
-	createToggleRow(colMovement, "Randomize Movement", "rbxassetid://6031768426", "RandomizeOffset").LayoutOrder = 6
-	createToggleRow(colMovement, "Permanent Noclip", "rbxassetid://6034855071", "NoclipPermanent").LayoutOrder = 7
+	createToggleRow(pageTP, "Randomize Movement", "rbxassetid://6031768426", "RandomizeOffset", 6)
+	createInputRow(pageTP, "Random Offset range :", "rbxassetid://6031768426", CONFIG.RandomOffsetRange, 7, function(box, text)
+		local val = tonumber(text)
+		if val and val >= 0.1 and val <= 10 then CONFIG.RandomOffsetRange = val else box.Text = tostring(CONFIG.RandomOffsetRange) end
+	end)
 
-	createSectionHeader(colMovement, "Physical Adjustments").LayoutOrder = 8
-	createInputRow(colMovement, "Walk Speed :", "rbxassetid://6031768426", CONFIG.WalkSpeed, function(box, text)
+	createToggleRow(pageTP, "Permanent Noclip", "rbxassetid://6034855071", "NoclipPermanent", 8)
+
+	createSectionHeader(pageTP, "PHYSICAL SPEEDS", 9)
+	createInputRow(pageTP, "Walk Speed (WS) :", "rbxassetid://6031768426", CONFIG.WalkSpeed, 10, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 16 and val <= 150 then CONFIG.WalkSpeed = val else box.Text = tostring(CONFIG.WalkSpeed) end
-	end).LayoutOrder = 9
+	end)
 
-	createInputRow(colMovement, "Jump Power :", "rbxassetid://6031768426", CONFIG.JumpPower, function(box, text)
+	createInputRow(pageTP, "Jump Power (JP) :", "rbxassetid://6031768426", CONFIG.JumpPower, 11, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 50 and val <= 250 then CONFIG.JumpPower = val else box.Text = tostring(CONFIG.JumpPower) end
-	end).LayoutOrder = 10
+	end)
 
-	createSectionHeader(colMovement, "Drops & Auto Sell").LayoutOrder = 11
-	createToggleRow(colMovement, "Auto Collect Drops", "rbxassetid://6034287523", "AutoCollect").LayoutOrder = 12
-	createToggleRow(colMovement, "Auto Sell Inventory", "rbxassetid://6034287514", "AutoSell").LayoutOrder = 13
-	createToggleRow(colMovement, "Sell Common items", "rbxassetid://6034287514", "SellCommon").LayoutOrder = 14
-	createToggleRow(colMovement, "Sell Uncommon items", "rbxassetid://6034287514", "SellUncommon").LayoutOrder = 15
-	createToggleRow(colMovement, "Sell Rare items", "rbxassetid://6034287514", "SellRare").LayoutOrder = 16
+	-- 4. DUNGEON TAB (SECTIONS)
+	createSectionHeader(pageDungeon, "LOBBY SETTINGS", 1)
+	createDropdownRow(pageDungeon, "Dungeon Name :", "rbxassetid://6034287517", CONFIG.DungeonName, DUNGEONS_LIST, 2, function(newVal)
+		CONFIG.DungeonName = newVal
+	end)
 
-	createSectionHeader(colMovement, "Optimization").LayoutOrder = 17
-	createToggleRow(colMovement, "Night Mode (No 3D)", "rbxassetid://6031289116", "Disable3DRendering", function(state)
+	createDropdownRow(pageDungeon, "Difficulty :", "rbxassetid://6034287517", CONFIG.Difficulty, DIFFICULTIES_LIST, 3, function(newVal)
+		CONFIG.Difficulty = newVal
+	end)
+
+	createToggleRow(pageDungeon, "Auto Join Lobby", "rbxassetid://6034855071", "AutoJoinDungeon", 4)
+	createToggleRow(pageDungeon, "Auto Retry Dungeon", "rbxassetid://6031768426", "AutoRetry", 5)
+	
+	createInputRow(pageDungeon, "Retry Delay (s) :", "rbxassetid://6031768426", CONFIG.RetryDelay, 6, function(box, text)
+		local val = tonumber(text)
+		if val and val >= 0 and val <= 15 then CONFIG.RetryDelay = val else box.Text = tostring(CONFIG.RetryDelay) end
+	end)
+
+	createSectionHeader(pageDungeon, "HEALING SWITCH", 7)
+	createToggleRow(pageDungeon, "Auto Healing", "rbxassetid://6034287517", "AutoHeal", 8)
+	createInputRow(pageDungeon, "Heal Threshold (life %) :", "rbxassetid://6034287517", math.floor(CONFIG.HealThreshold * 100), 9, function(box, text)
+		local val = tonumber(text)
+		if val and val >= 5 and val <= 100 then CONFIG.HealThreshold = val / 100 else box.Text = tostring(math.floor(CONFIG.HealThreshold * 100)) end
+	end)
+
+	-- 5. SYSTEM TAB (SECTIONS)
+	createSectionHeader(pageSystem, "INVENTORY LOOTS", 1)
+	createToggleRow(pageSystem, "Auto Collect Drops", "rbxassetid://6034287523", "AutoCollect", 2)
+	createToggleRow(pageSystem, "Auto Sell Items", "rbxassetid://6034287514", "AutoSell", 3)
+	createToggleRow(pageSystem, "Sell Common items", "rbxassetid://6034287514", "SellCommon", 4)
+	createToggleRow(pageSystem, "Sell Uncommon items", "rbxassetid://6034287514", "SellUncommon", 5)
+	createToggleRow(pageSystem, "Sell Rare items", "rbxassetid://6034287514", "SellRare", 6)
+
+	createSectionHeader(pageSystem, "SYSTEM OPTIMIZATION", 7)
+	
+	-- 3D Rendering (Clay style)
+	local optiFrame = Instance.new("Frame")
+	optiFrame.Size = UDim2.new(1, 0, 0, 34)
+	optiFrame.BackgroundTransparency = 1
+	optiFrame.LayoutOrder = 8
+
+	local optiBtn = Instance.new("TextButton")
+	optiBtn.Size = UDim2.new(0, 18, 0, 18)
+	optiBtn.Position = UDim2.new(0, 4, 0.5, -9)
+	optiBtn.BackgroundColor3 = CONFIG.Disable3DRendering and colorBlueSelect or colorSlateSidebar
+	optiBtn.Text = CONFIG.Disable3DRendering and "✓" or ""
+	optiBtn.TextColor3 = colorTextWhite
+	optiBtn.TextSize = 10
+	optiBtn.Font = Enum.Font.FredokaOne
+	
+	local optiCorner = Instance.new("UICorner")
+	optiCorner.CornerRadius = UDim.new(0, 5)
+	optiCorner.Parent = optiBtn
+
+	local optiStroke = Instance.new("UIStroke")
+	optiStroke.Thickness = 2
+	optiStroke.Color = colorBorderDark
+	optiStroke.Parent = optiBtn
+
+	local optiGrad = Instance.new("UIGradient")
+	optiGrad.Rotation = 90
+	optiGrad.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 180, 180))
+	})
+	optiGrad.Parent = optiBtn
+	optiBtn.Parent = optiFrame
+
+	local optiLbl = Instance.new("TextLabel")
+	optiLbl.Size = UDim2.new(1, -34, 1, 0)
+	optiLbl.Position = UDim2.new(0, 34, 0, 0)
+	optiLbl.BackgroundTransparency = 1
+	optiLbl.Text = "Night Mode (Disable 3D Rendering)"
+	optiLbl.TextColor3 = colorTextWhite
+	optiLbl.TextSize = 11
+	optiLbl.TextXAlignment = Enum.TextXAlignment.Left
+	optiLbl.Font = Enum.Font.GothamBold
+	
+	local optiLblStroke = Instance.new("UIStroke")
+	optiLblStroke.Thickness = 1
+	optiLblStroke.Color = Color3.fromRGB(0, 0, 0)
+	optiLblStroke.Parent = optiLbl
+	optiLbl.Parent = optiFrame
+
+	optiBtn.MouseButton1Click:Connect(function()
+		CONFIG.Disable3DRendering = not CONFIG.Disable3DRendering
+		animateColor(optiBtn, "BackgroundColor3", CONFIG.Disable3DRendering and colorBlueSelect or colorSlateSidebar)
+		optiBtn.Text = CONFIG.Disable3DRendering and "✓" or ""
 		pcall(function()
-			RunService:Set3dRenderingEnabled(not state)
+			RunService:Set3dRenderingEnabled(not CONFIG.Disable3DRendering)
 		end)
-	end).LayoutOrder = 18
+	end)
+	optiFrame.Parent = pageSystem
+	
+	-- ============================================
+	-- INITIALISATION ET MISE A JOUR
+	-- ============================================
+	selectTab("Status")
 
-	-- ============================================
-	-- ASYNCHRONOUS DATA REFRESH
-	-- ============================================
+	-- Update des stats asynchrones
 	task.spawn(function()
 		while screenGui.Parent do
 			local elapsed = os.time() - STATS.StartTime
@@ -1474,7 +1640,7 @@ local function createUltimateGUI()
 		end
 	end)
 
-	-- F6 Shortcut Trigger
+	-- Touche F6
 	UserInputService.InputBegan:Connect(function(input, gameProcessed)
 		if gameProcessed then return end
 		if input.KeyCode == Enum.KeyCode.F6 then
@@ -1490,11 +1656,11 @@ local function createUltimateGUI()
 		end
 	end)
 
-	print("GUI ULTIME V15 CHARGEE !")
+	print("GUI ULTIME V16 CHARGEE !")
 end
 
 -- ============================================================
--- 12. RUN LAUNCHER
+-- 12. LANCEMENT
 -- ============================================================
 
 task.wait(0.5)
