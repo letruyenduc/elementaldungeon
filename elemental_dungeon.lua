@@ -408,7 +408,14 @@ end
 
 function swing()
 	pcall(function()
-		UseSword:InvokeServer()
+		local character = LocalPlayer.Character
+		local tool = character and character:FindFirstChildOfClass("Tool")
+		if tool then
+			tool:Activate()
+		end
+		if UseSword then
+			UseSword:InvokeServer()
+		end
 	end)
 end
 
@@ -1858,7 +1865,7 @@ local function createUltimateGUI()
 
 	runBackgroundLoop()
 
-	print("GUI ULTIME V26 CHARGEE !")
+	print("GUI ULTIME V27 CHARGEE !")
 end
 
 -- ============================================================
