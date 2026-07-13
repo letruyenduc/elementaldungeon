@@ -1,6 +1,6 @@
 -- ======================================================
--- AUTOFARM ULTIME – VERSION GUI V11 (CLAYMORPHISM & WINDOWS STYLE)
--- Onglets, Icônes, Équipements intelligents, Réduire/Agrandir/Fermer !
+-- AUTOFARM ULTIME – VERSION GUI V12 (EMERALD CLAYMORPHISM)
+-- Onglets, Icônes Vectorielles, Vrais Dropdowns Dépliants, et plus !
 -- ======================================================
 
 repeat
@@ -184,7 +184,6 @@ local STATS = {
 local isTweening = false
 local monitoredMobs = {}
 
--- Noclip permanent / temporaire
 RunService.Stepped:Connect(function()
 	if (isTweening or CONFIG.NoclipPermanent) and LocalPlayer.Character then
 		for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
@@ -195,7 +194,6 @@ RunService.Stepped:Connect(function()
 	end
 end)
 
--- Physique modifiée
 task.spawn(function()
 	while true do
 		task.wait(1)
@@ -577,7 +575,7 @@ function startFarm()
 end
 
 -- ============================================================
--- 11. CRÉATION DE L'INTERFACE EN CLAYMORPHISM AVEC CONTRÔLES WINDOWS
+-- 11. CRÉATION DE L'INTERFACE EN EMERALD & MINT CLAYMORPHISM
 -- ============================================================
 
 local function animateColor(guiObject, property, targetColor, duration)
@@ -599,32 +597,40 @@ local function createUltimateGUI()
 	local isWindowMaximized = false
 	local isWindowMinimized = false
 
-	-- Frame principal (Puffy Claymorphism Style)
+	-- Palette de couleurs orientée Vert (Émeraude & Menthe) + Rose Corail (complémentaire)
+	local colorEmeraldBackground = Color3.fromRGB(12, 28, 22) -- Fond émeraude sombre
+	local colorEmeraldTitle = Color3.fromRGB(18, 42, 32)      -- Titre émeraude moyen
+	local colorEmeraldBorder = Color3.fromRGB(30, 60, 48)     -- Bordure relief 3D
+	local colorMintActive = Color3.fromRGB(0, 220, 120)       -- Vert menthe (néon)
+	local colorCoralWarning = Color3.fromRGB(240, 75, 110)    -- Rose Corail (complémentaire)
+	local colorTextLight = Color3.fromRGB(230, 245, 235)      -- Texte clair doux
+
+	-- Frame principal (Emerald Claymorphism)
 	local mainFrame = Instance.new("Frame")
 	mainFrame.Size = UDim2.new(0, defaultWidth, 0, defaultHeight)
 	mainFrame.Position = UDim2.new(0.5, -defaultWidth/2, 0.5, -defaultHeight/2)
-	mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 48)
+	mainFrame.BackgroundColor3 = colorEmeraldBackground
 	mainFrame.BorderSizePixel = 0
 	mainFrame.Active = true
 	mainFrame.Draggable = true
 	mainFrame.ClipsDescendants = true
 	mainFrame.Parent = screenGui
 
-	-- Bordure claymorphic douce (Puffy Stroke)
+	-- Bordure claymorphic émeraude douce
 	local border = Instance.new("UIStroke")
 	border.Thickness = 3
-	border.Color = Color3.fromRGB(48, 48, 75)
+	border.Color = colorEmeraldBorder
 	border.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	border.Parent = mainFrame
 
 	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 20) -- Coins très arrondis style Clay
+	corner.CornerRadius = UDim.new(0, 20)
 	corner.Parent = mainFrame
 
-	-- Barre de titre (Style Windows 11 / Clay)
+	-- Barre de titre
 	local titleBar = Instance.new("Frame")
 	titleBar.Size = UDim2.new(1, 0, 0, 45)
-	titleBar.BackgroundColor3 = Color3.fromRGB(38, 38, 58)
+	titleBar.BackgroundColor3 = colorEmeraldTitle
 	titleBar.BorderSizePixel = 0
 	titleBar.Parent = mainFrame
 
@@ -632,11 +638,10 @@ local function createUltimateGUI()
 	titleCorner.CornerRadius = UDim.new(0, 20)
 	titleCorner.Parent = titleBar
 
-	-- Cacher l'arrondi du bas pour la transition avec le corps
 	local titleHideBottom = Instance.new("Frame")
 	titleHideBottom.Size = UDim2.new(1, 0, 0, 10)
 	titleHideBottom.Position = UDim2.new(0, 0, 1, -10)
-	titleHideBottom.BackgroundColor3 = Color3.fromRGB(38, 38, 58)
+	titleHideBottom.BackgroundColor3 = colorEmeraldTitle
 	titleHideBottom.BorderSizePixel = 0
 	titleHideBottom.Parent = titleBar
 
@@ -644,8 +649,8 @@ local function createUltimateGUI()
 	titleText.Size = UDim2.new(0.65, 0, 1, 0)
 	titleText.Position = UDim2.new(0, 16, 0, 0)
 	titleText.BackgroundTransparency = 1
-	titleText.Text = "⚡ ELEMENTAL FARMER V11"
-	titleText.TextColor3 = Color3.fromRGB(240, 240, 255)
+	titleText.Text = "★ ELEMENTAL FARMER V12"
+	titleText.TextColor3 = colorTextLight
 	titleText.TextSize = 13
 	titleText.Font = Enum.Font.GothamBold
 	titleText.TextXAlignment = Enum.TextXAlignment.Left
@@ -653,8 +658,8 @@ local function createUltimateGUI()
 
 	-- Conteneur des boutons Windows
 	local winControls = Instance.new("Frame")
-	winControls.Size = UDim2.new(0, 130, 1, 0)
-	winControls.Position = UDim2.new(1, -130, 0, 0)
+	winControls.Size = UDim2.new(0, 120, 1, 0)
+	winControls.Position = UDim2.new(1, -120, 0, 0)
 	winControls.BackgroundTransparency = 1
 	winControls.Parent = titleBar
 
@@ -664,16 +669,15 @@ local function createUltimateGUI()
 	navList.SortOrder = Enum.SortOrder.LayoutOrder
 	navList.Parent = winControls
 
-	-- Variables de visibilité pour la minimisation
 	local tabBar = Instance.new("Frame")
 	local pageContainer = Instance.new("Frame")
 
 	local function createWinBtn(text, order, hoverColor, clickCallback)
 		local btn = Instance.new("TextButton")
-		btn.Size = UDim2.new(0, 40, 1, 0)
+		btn.Size = UDim2.new(0, 36, 1, 0)
 		btn.BackgroundTransparency = 1
 		btn.Text = text
-		btn.TextColor3 = Color3.fromRGB(200, 200, 220)
+		btn.TextColor3 = Color3.fromRGB(150, 180, 160)
 		btn.TextSize = 13
 		btn.Font = Enum.Font.GothamBold
 		btn.LayoutOrder = order
@@ -686,13 +690,13 @@ local function createUltimateGUI()
 		end)
 		btn.MouseLeave:Connect(function()
 			btn.BackgroundTransparency = 1
-			btn.TextColor3 = Color3.fromRGB(200, 200, 220)
+			btn.TextColor3 = Color3.fromRGB(150, 180, 160)
 		end)
 		btn.MouseButton1Click:Connect(clickCallback)
 	end
 
-	-- Bouton Réduire (_) Windows
-	createWinBtn("—", 1, Color3.fromRGB(50, 50, 75), function()
+	-- Boutons Windows (Minimize, Maximize, Close Corail)
+	createWinBtn("—", 1, colorEmeraldBorder, function()
 		isWindowMinimized = not isWindowMinimized
 		if isWindowMinimized then
 			tabBar.Visible = false
@@ -706,16 +710,14 @@ local function createUltimateGUI()
 		end
 	end)
 
-	-- Bouton Agrandir (▢) Windows
-	createWinBtn("▢", 2, Color3.fromRGB(50, 50, 75), function()
+	createWinBtn("▢", 2, colorEmeraldBorder, function()
 		if isWindowMinimized then return end
 		isWindowMaximized = not isWindowMaximized
 		local targetH = isWindowMaximized and maximizedHeight or defaultHeight
 		mainFrame:TweenSize(UDim2.new(0, defaultWidth, 0, targetH), "Out", "Quad", 0.25, true)
 	end)
 
-	-- Bouton Fermer (X) Windows (Rouge au survol)
-	createWinBtn("✕", 3, Color3.fromRGB(190, 40, 40), function()
+	createWinBtn("✕", 3, colorCoralWarning, function()
 		stopFarm()
 		pcall(function()
 			RunService:Set3dRenderingEnabled(true)
@@ -726,7 +728,7 @@ local function createUltimateGUI()
 	-- Bar d'onglets (Navigation Bar)
 	tabBar.Size = UDim2.new(1, 0, 0, 36)
 	tabBar.Position = UDim2.new(0, 0, 0, 45)
-	tabBar.BackgroundColor3 = Color3.fromRGB(20, 20, 34)
+	tabBar.BackgroundColor3 = Color3.fromRGB(10, 22, 17)
 	tabBar.BorderSizePixel = 0
 	tabBar.Parent = mainFrame
 
@@ -744,13 +746,13 @@ local function createUltimateGUI()
 	local pages = {}
 	local tabButtons = {}
 
-	-- Helper de création de ScrollingFrame pour chaque Onglet
+	-- Helper de création de ScrollingFrame
 	local function createTabPage(name, layoutOrder)
 		local scroll = Instance.new("ScrollingFrame")
 		scroll.Size = UDim2.new(1, 0, 1, 0)
 		scroll.BackgroundTransparency = 1
 		scroll.ScrollBarThickness = 6
-		scroll.ScrollBarImageColor3 = Color3.fromRGB(0, 180, 255)
+		scroll.ScrollBarImageColor3 = colorMintActive
 		scroll.Visible = false
 		scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 		scroll.Parent = pageContainer
@@ -789,29 +791,49 @@ local function createUltimateGUI()
 		end
 		for name, btn in pairs(tabButtons) do
 			if name == tabName then
-				btn.BackgroundColor3 = Color3.fromRGB(30, 30, 48)
-				btn.TextColor3 = Color3.fromRGB(0, 180, 255)
-				btn.Font = Enum.Font.GothamBold
+				btn.BackgroundColor3 = colorEmeraldBackground
+				btn.IconLabel.ImageColor3 = colorMintActive
+				btn.TextLabel.TextColor3 = colorMintActive
+				btn.TextLabel.Font = Enum.Font.GothamBold
 			else
-				btn.BackgroundColor3 = Color3.fromRGB(20, 20, 34)
-				btn.TextColor3 = Color3.fromRGB(160, 160, 180)
-				btn.Font = Enum.Font.Gotham
+				btn.BackgroundColor3 = Color3.fromRGB(10, 22, 17)
+				btn.IconLabel.ImageColor3 = Color3.fromRGB(130, 160, 140)
+				btn.TextLabel.TextColor3 = Color3.fromRGB(130, 160, 140)
+				btn.TextLabel.Font = Enum.Font.Gotham
 			end
 		end
 	end
 
-	-- Créateur de boutons d'onglets
-	local function createTabButton(name, labelText, layoutOrder)
+	-- Créateur de boutons d'onglets (avec ImageLabel pour remplacer les emojis)
+	local function createTabButton(name, iconId, text, layoutOrder)
 		local btn = Instance.new("TextButton")
 		btn.Size = UDim2.new(0.2, 0, 1, 0)
-		btn.BackgroundColor3 = Color3.fromRGB(20, 20, 34)
+		btn.BackgroundColor3 = Color3.fromRGB(10, 22, 17)
 		btn.BorderSizePixel = 0
-		btn.Text = labelText
-		btn.TextColor3 = Color3.fromRGB(160, 160, 180)
-		btn.TextSize = 11
-		btn.Font = Enum.Font.Gotham
+		btn.Text = "" -- Texte géré par un TextLabel séparé
 		btn.LayoutOrder = layoutOrder
 		btn.Parent = tabBar
+
+		local icon = Instance.new("ImageLabel")
+		icon.Size = UDim2.new(0, 14, 0, 14)
+		icon.Position = UDim2.new(0.12, 0, 0.5, -7)
+		icon.BackgroundTransparency = 1
+		icon.Image = iconId
+		icon.ImageColor3 = Color3.fromRGB(130, 160, 140)
+		icon.Name = "IconLabel"
+		icon.Parent = btn
+
+		local lbl = Instance.new("TextLabel")
+		lbl.Size = UDim2.new(0.7, 0, 1, 0)
+		lbl.Position = UDim2.new(0.3, 0, 0, 0)
+		lbl.BackgroundTransparency = 1
+		lbl.Text = text
+		lbl.TextColor3 = Color3.fromRGB(130, 160, 140)
+		lbl.TextSize = 10
+		lbl.Font = Enum.Font.Gotham
+		lbl.TextXAlignment = Enum.TextXAlignment.Left
+		lbl.Name = "TextLabel"
+		lbl.Parent = btn
 
 		btn.MouseButton1Click:Connect(function()
 			selectTab(name)
@@ -820,43 +842,40 @@ local function createUltimateGUI()
 		tabButtons[name] = btn
 	end
 
-	createTabButton("Status", "🏠 Status", 1)
-	createTabButton("Combat", "⚔️ Combat", 2)
-	createTabButton("TP", "📍 Parcours", 3)
-	createTabButton("Dungeon", "🏰 Donjon", 4)
-	createTabButton("System", "⚙️ Système", 5)
+	createTabButton("Status", "rbxassetid://6031768426", "Stats", 1)
+	createTabButton("Combat", "rbxassetid://6035043132", "Combat", 2)
+	createTabButton("TP", "rbxassetid://6034855071", "Parcours", 3)
+	createTabButton("Dungeon", "rbxassetid://6034287517", "Donjon", 4)
+	createTabButton("System", "rbxassetid://6031289116", "Système", 5)
 
 	-- ============================================
-	-- CONTRÔLES STYLISÉS CLAYMORPHISM (PUFFY LOOK)
+	-- CONTRÔLES STYLISÉS CLAYMORPHISM (PUFFY VERT)
 	-- ============================================
-	local function createToggleRow(parent, label, configKey, layoutOrder)
+	local function createToggleRow(parent, label, iconId, configKey, layoutOrder)
 		local frame = Instance.new("Frame")
 		frame.Size = UDim2.new(1, 0, 0, 34)
 		frame.BackgroundTransparency = 1
 		frame.LayoutOrder = layoutOrder
 
-		-- Puffy Clay Toggle Button
 		local btn = Instance.new("TextButton")
 		btn.Size = UDim2.new(0, 22, 0, 22)
 		btn.Position = UDim2.new(0, 4, 0.5, -11)
-		btn.BackgroundColor3 = CONFIG[configKey] and Color3.fromRGB(0, 180, 255) or Color3.fromRGB(24, 24, 38)
+		btn.BackgroundColor3 = CONFIG[configKey] and colorMintActive or Color3.fromRGB(18, 38, 30)
 		btn.Text = CONFIG[configKey] and "✓" or ""
-		btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-		btn.TextSize = 11
+		btn.TextColor3 = Color3.fromRGB(12, 28, 22)
+		btn.TextSize = 12
 		btn.Font = Enum.Font.GothamBold
 		
 		local btnCorner = Instance.new("UICorner")
-		btnCorner.CornerRadius = UDim.new(0, 6) -- Arrondi doux
+		btnCorner.CornerRadius = UDim.new(0, 6)
 		btnCorner.Parent = btn
 		
-		-- UIStroke pour le relief 3D
 		local btnStroke = Instance.new("UIStroke")
 		btnStroke.Thickness = 2
-		btnStroke.Color = CONFIG[configKey] and Color3.fromRGB(80, 210, 255) or Color3.fromRGB(42, 42, 62)
+		btnStroke.Color = CONFIG[configKey] and Color3.fromRGB(180, 255, 220) or colorEmeraldBorder
 		btnStroke.Parent = btn
 		btn.Parent = frame
 
-		-- Soft gradient pour l'aspect argileux
 		local gradient = Instance.new("UIGradient")
 		gradient.Rotation = 90
 		gradient.Color = ColorSequence.new({
@@ -865,12 +884,20 @@ local function createUltimateGUI()
 		})
 		gradient.Parent = btn
 
+		local icon = Instance.new("ImageLabel")
+		icon.Size = UDim2.new(0, 14, 0, 14)
+		icon.Position = UDim2.new(0, 36, 0.5, -7)
+		icon.BackgroundTransparency = 1
+		icon.Image = iconId
+		icon.ImageColor3 = CONFIG[configKey] and colorMintActive or Color3.fromRGB(150, 180, 160)
+		icon.Parent = frame
+
 		local lbl = Instance.new("TextLabel")
-		lbl.Size = UDim2.new(1, -36, 1, 0)
-		lbl.Position = UDim2.new(0, 36, 0, 0)
+		lbl.Size = UDim2.new(1, -56, 1, 0)
+		lbl.Position = UDim2.new(0, 56, 0, 0)
 		lbl.BackgroundTransparency = 1
 		lbl.Text = label
-		lbl.TextColor3 = Color3.fromRGB(220, 220, 240)
+		lbl.TextColor3 = colorTextLight
 		lbl.TextSize = 11
 		lbl.TextXAlignment = Enum.TextXAlignment.Left
 		lbl.Font = Enum.Font.Gotham
@@ -878,8 +905,9 @@ local function createUltimateGUI()
 
 		btn.MouseButton1Click:Connect(function()
 			CONFIG[configKey] = not CONFIG[configKey]
-			animateColor(btn, "BackgroundColor3", CONFIG[configKey] and Color3.fromRGB(0, 180, 255) or Color3.fromRGB(24, 24, 38))
-			btnStroke.Color = CONFIG[configKey] and Color3.fromRGB(80, 210, 255) or Color3.fromRGB(42, 42, 62)
+			animateColor(btn, "BackgroundColor3", CONFIG[configKey] and colorMintActive or Color3.fromRGB(18, 38, 30))
+			btnStroke.Color = CONFIG[configKey] and Color3.fromRGB(180, 255, 220) or colorEmeraldBorder
+			icon.ImageColor3 = CONFIG[configKey] and colorMintActive or Color3.fromRGB(150, 180, 160)
 			btn.Text = CONFIG[configKey] and "✓" or ""
 		end)
 
@@ -887,39 +915,58 @@ local function createUltimateGUI()
 		return frame
 	end
 
-	local function createDropdownRow(parent, label, initialValue, options, layoutOrder, callback)
+	-- VRAI DROPDOWN COMPONENT (DÉPLIANT & INTERACTIF)
+	local function createDropdownRow(parent, label, iconId, initialValue, options, layoutOrder, callback)
+		local isOpened = false
+		local itemHeight = 26
+		local dropdownRowHeight = 34
+
 		local frame = Instance.new("Frame")
-		frame.Size = UDim2.new(1, 0, 0, 34)
+		frame.Size = UDim2.new(1, 0, 0, dropdownRowHeight)
 		frame.BackgroundTransparency = 1
+		frame.ClipsDescendants = true
 		frame.LayoutOrder = layoutOrder
-		
+
+		local topRow = Instance.new("Frame")
+		topRow.Size = UDim2.new(1, 0, 0, dropdownRowHeight)
+		topRow.BackgroundTransparency = 1
+		topRow.Parent = frame
+
+		local icon = Instance.new("ImageLabel")
+		icon.Size = UDim2.new(0, 14, 0, 14)
+		icon.Position = UDim2.new(0, 4, 0.5, -7)
+		icon.BackgroundTransparency = 1
+		icon.Image = iconId
+		icon.ImageColor3 = colorMintActive
+		icon.Parent = topRow
+
 		local lbl = Instance.new("TextLabel")
-		lbl.Size = UDim2.new(0.45, 0, 1, 0)
-		lbl.Position = UDim2.new(0, 4, 0, 0)
+		lbl.Size = UDim2.new(0.42, 0, 1, 0)
+		lbl.Position = UDim2.new(0, 24, 0, 0)
 		lbl.BackgroundTransparency = 1
 		lbl.Text = label
-		lbl.TextColor3 = Color3.fromRGB(200, 200, 220)
+		lbl.TextColor3 = Color3.fromRGB(200, 220, 210)
 		lbl.TextSize = 11
 		lbl.TextXAlignment = Enum.TextXAlignment.Left
 		lbl.Font = Enum.Font.Gotham
-		lbl.Parent = frame
+		lbl.Parent = topRow
 
 		local btn = Instance.new("TextButton")
-		btn.Size = UDim2.new(0.52, 0, 1, 0)
-		btn.Position = UDim2.new(0.48, 0, 0, 0)
-		btn.BackgroundColor3 = Color3.fromRGB(22, 22, 36)
-		btn.Text = tostring(initialValue)
+		btn.Size = UDim2.new(0.5, 0, 0, 26)
+		btn.Position = UDim2.new(0.5, 0, 0.5, -13)
+		btn.BackgroundColor3 = Color3.fromRGB(18, 38, 30)
+		btn.Text = tostring(initialValue) .. "  ▼"
 		btn.TextColor3 = Color3.fromRGB(255, 255, 255)
 		btn.TextSize = 11
 		btn.Font = Enum.Font.GothamSemibold
 		
 		local btnCorner = Instance.new("UICorner")
-		btnCorner.CornerRadius = UDim.new(0, 8) -- Plus arrondi
+		btnCorner.CornerRadius = UDim.new(0, 8)
 		btnCorner.Parent = btn
 		
 		local btnStroke = Instance.new("UIStroke")
 		btnStroke.Thickness = 2
-		btnStroke.Color = Color3.fromRGB(45, 45, 68)
+		btnStroke.Color = colorEmeraldBorder
 		btnStroke.Parent = btn
 
 		local gradient = Instance.new("UIGradient")
@@ -929,33 +976,111 @@ local function createUltimateGUI()
 			ColorSequenceKeypoint.new(1, Color3.fromRGB(190, 190, 190))
 		})
 		gradient.Parent = btn
-		btn.Parent = frame
+		btn.Parent = topRow
 
-		local optList = options
-		btn.MouseButton1Click:Connect(function()
-			if label:find("Arme") or label:find("Élément") then
-				optList = getAvailableTools()
+		-- Conteneur d'options de dropdown dépliant
+		local optionsListFrame = Instance.new("Frame")
+		optionsListFrame.Size = UDim2.new(0.5, 0, 0, 0)
+		optionsListFrame.Position = UDim2.new(0.5, 0, 0, dropdownRowHeight)
+		optionsListFrame.BackgroundColor3 = Color3.fromRGB(15, 34, 26)
+		optionsListFrame.BorderSizePixel = 0
+		optionsListFrame.Visible = false
+		optionsListFrame.Parent = frame
+
+		local opCorner = Instance.new("UICorner")
+		opCorner.CornerRadius = UDim.new(0, 8)
+		opCorner.Parent = optionsListFrame
+
+		local opStroke = Instance.new("UIStroke")
+		opStroke.Thickness = 1
+		opStroke.Color = colorEmeraldBorder
+		opStroke.Parent = optionsListFrame
+
+		local listLayout = Instance.new("UIListLayout")
+		listLayout.Padding = UDim.new(0, 0)
+		listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+		listLayout.Parent = optionsListFrame
+
+		local function rebuildDropdownItems(optList)
+			for _, child in ipairs(optionsListFrame:GetChildren()) do
+				if child:IsA("TextButton") then child:Destroy() end
 			end
 
-			local index = table.find(optList, btn.Text) or 1
-			index = index % #optList + 1
-			btn.Text = tostring(optList[index])
-			callback(optList[index])
+			for idx, option in ipairs(optList) do
+				local optBtn = Instance.new("TextButton")
+				optBtn.Size = UDim2.new(1, 0, 0, itemHeight)
+				optBtn.BackgroundTransparency = 1
+				optBtn.Text = tostring(option)
+				optBtn.TextColor3 = Color3.fromRGB(200, 220, 205)
+				optBtn.TextSize = 10
+				optBtn.Font = Enum.Font.Gotham
+				optBtn.LayoutOrder = idx
+				
+				optBtn.MouseEnter:Connect(function()
+					optBtn.BackgroundTransparency = 0
+					optBtn.BackgroundColor3 = colorMintActive
+					optBtn.TextColor3 = Color3.fromRGB(12, 28, 22)
+				end)
+				optBtn.MouseLeave:Connect(function()
+					optBtn.BackgroundTransparency = 1
+					optBtn.TextColor3 = Color3.fromRGB(200, 220, 205)
+				end)
+
+				optBtn.MouseButton1Click:Connect(function()
+					btn.Text = tostring(option) .. "  ▼"
+					callback(option)
+					-- Replier
+					isOpened = false
+					optionsListFrame.Visible = false
+					frame:TweenSize(UDim2.new(1, 0, 0, dropdownRowHeight), "Out", "Quad", 0.15, true)
+				end)
+
+				optBtn.Parent = optionsListFrame
+			end
+		end
+
+		rebuildDropdownItems(options)
+
+		btn.MouseButton1Click:Connect(function()
+			-- Mise à jour dynamique pour les armes/éléments détectés en temps réel
+			if label:find("Arme") or label:find("Élément") then
+				local updatedList = getAvailableTools()
+				rebuildDropdownItems(updatedList)
+			end
+
+			isOpened = not isOpened
+			if isOpened then
+				optionsListFrame.Visible = true
+				local totalHeight = listLayout.AbsoluteContentSize.Y + 8
+				optionsListFrame.Size = UDim2.new(0.5, 0, 0, totalHeight)
+				frame:TweenSize(UDim2.new(1, 0, 0, dropdownRowHeight + totalHeight + 4), "Out", "Quad", 0.15, true)
+			else
+				optionsListFrame.Visible = false
+				frame:TweenSize(UDim2.new(1, 0, 0, dropdownRowHeight), "Out", "Quad", 0.15, true)
+			end
 		end)
 
 		frame.Parent = parent
 		return frame
 	end
 
-	local function createInputRow(parent, label, initialValue, layoutOrder, callback)
+	local function createInputRow(parent, label, iconId, initialValue, layoutOrder, callback)
 		local frame = Instance.new("Frame")
 		frame.Size = UDim2.new(1, 0, 0, 34)
 		frame.BackgroundTransparency = 1
 		frame.LayoutOrder = layoutOrder
 		
+		local icon = Instance.new("ImageLabel")
+		icon.Size = UDim2.new(0, 14, 0, 14)
+		icon.Position = UDim2.new(0, 4, 0.5, -7)
+		icon.BackgroundTransparency = 1
+		icon.Image = iconId
+		icon.ImageColor3 = colorMintActive
+		icon.Parent = frame
+
 		local lbl = Instance.new("TextLabel")
-		lbl.Size = UDim2.new(0.45, 0, 1, 0)
-		lbl.Position = UDim2.new(0, 4, 0, 0)
+		lbl.Size = UDim2.new(0.42, 0, 1, 0)
+		lbl.Position = UDim2.new(0, 24, 0, 0)
 		lbl.BackgroundTransparency = 1
 		lbl.Text = label
 		lbl.TextColor3 = Color3.fromRGB(200, 200, 220)
@@ -965,9 +1090,9 @@ local function createUltimateGUI()
 		lbl.Parent = frame
 
 		local input = Instance.new("TextBox")
-		input.Size = UDim2.new(0.52, 0, 1, 0)
-		input.Position = UDim2.new(0.48, 0, 0, 0)
-		input.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+		input.Size = UDim2.new(0.5, 0, 0, 26)
+		input.Position = UDim2.new(0.5, 0, 0.5, -13)
+		input.BackgroundColor3 = Color3.fromRGB(15, 34, 26)
 		input.Text = tostring(initialValue)
 		input.TextColor3 = Color3.fromRGB(255, 255, 255)
 		input.TextSize = 11
@@ -979,7 +1104,7 @@ local function createUltimateGUI()
 
 		local strokeInput = Instance.new("UIStroke")
 		strokeInput.Thickness = 2
-		strokeInput.Color = Color3.fromRGB(38, 38, 58)
+		strokeInput.Color = colorEmeraldBorder
 		strokeInput.Parent = input
 		input.Parent = frame
 
@@ -996,7 +1121,7 @@ local function createUltimateGUI()
 		lbl.Size = UDim2.new(1, 0, 0, 28)
 		lbl.BackgroundTransparency = 1
 		lbl.Text = "──  " .. text .. "  ──"
-		lbl.TextColor3 = Color3.fromRGB(0, 180, 255)
+		lbl.TextColor3 = colorMintActive
 		lbl.TextSize = 10
 		lbl.Font = Enum.Font.GothamBold
 		lbl.TextXAlignment = Enum.TextXAlignment.Left
@@ -1005,13 +1130,13 @@ local function createUltimateGUI()
 	end
 
 	-- ============================================
-	-- ONGLET 1 : STATUS (STATS CLAY)
+	-- ONGLET 1 : STATUS
 	-- ============================================
 	local mainToggleBtn = Instance.new("TextButton")
 	mainToggleBtn.Size = UDim2.new(1, 0, 0, 45)
-	mainToggleBtn.BackgroundColor3 = Color3.fromRGB(40, 180, 100)
+	mainToggleBtn.BackgroundColor3 = colorMintActive
 	mainToggleBtn.Text = "DÉMARRER L'AUTOFARM [F6]"
-	mainToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	mainToggleBtn.TextColor3 = Color3.fromRGB(12, 28, 22)
 	mainToggleBtn.TextSize = 13
 	mainToggleBtn.Font = Enum.Font.GothamBold
 	mainToggleBtn.LayoutOrder = 1
@@ -1022,7 +1147,7 @@ local function createUltimateGUI()
 	
 	local toggleStroke = Instance.new("UIStroke")
 	toggleStroke.Thickness = 2
-	toggleStroke.Color = Color3.fromRGB(90, 220, 140)
+	toggleStroke.Color = Color3.fromRGB(180, 255, 220)
 	toggleStroke.Parent = mainToggleBtn
 
 	local toggleGrad = Instance.new("UIGradient")
@@ -1035,30 +1160,30 @@ local function createUltimateGUI()
 	mainToggleBtn.Parent = pageStatus
 
 	mainToggleBtn.MouseEnter:Connect(function()
-		animateColor(mainToggleBtn, "BackgroundColor3", isRunning and Color3.fromRGB(230, 60, 60) or Color3.fromRGB(50, 210, 120))
+		animateColor(mainToggleBtn, "BackgroundColor3", isRunning and colorCoralWarning or Color3.fromRGB(0, 255, 136))
 	end)
 	mainToggleBtn.MouseLeave:Connect(function()
-		animateColor(mainToggleBtn, "BackgroundColor3", isRunning and Color3.fromRGB(200, 40, 40) or Color3.fromRGB(40, 180, 100))
+		animateColor(mainToggleBtn, "BackgroundColor3", isRunning and colorCoralWarning or colorMintActive)
 	end)
 
 	mainToggleBtn.MouseButton1Click:Connect(function()
 		if isRunning then
 			stopFarm()
 			mainToggleBtn.Text = "DÉMARRER L'AUTOFARM [F6]"
-			mainToggleBtn.BackgroundColor3 = Color3.fromRGB(40, 180, 100)
-			toggleStroke.Color = Color3.fromRGB(90, 220, 140)
+			mainToggleBtn.BackgroundColor3 = colorMintActive
+			toggleStroke.Color = Color3.fromRGB(180, 255, 220)
 		else
 			startFarm()
 			mainToggleBtn.Text = "ARRÊTER L'AUTOFARM [F6]"
-			mainToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
-			toggleStroke.Color = Color3.fromRGB(240, 90, 90)
+			mainToggleBtn.BackgroundColor3 = colorCoralWarning
+			toggleStroke.Color = Color3.fromRGB(255, 180, 190)
 		end
 	end)
 
-	-- Stats Card (Clay look)
+	-- Stats Card
 	local statusStatsFrame = Instance.new("Frame")
 	statusStatsFrame.Size = UDim2.new(1, 0, 0, 110)
-	statusStatsFrame.BackgroundColor3 = Color3.fromRGB(22, 22, 38)
+	statusStatsFrame.BackgroundColor3 = Color3.fromRGB(18, 38, 30)
 	statusStatsFrame.BorderSizePixel = 0
 	statusStatsFrame.LayoutOrder = 2
 	
@@ -1068,7 +1193,7 @@ local function createUltimateGUI()
 
 	local cardStroke = Instance.new("UIStroke")
 	cardStroke.Thickness = 2
-	cardStroke.Color = Color3.fromRGB(40, 40, 62)
+	cardStroke.Color = colorEmeraldBorder
 	cardStroke.Parent = statusStatsFrame
 
 	local statusStatsLabel = Instance.new("TextLabel")
@@ -1076,7 +1201,7 @@ local function createUltimateGUI()
 	statusStatsLabel.Position = UDim2.new(0, 10, 0, 10)
 	statusStatsLabel.BackgroundTransparency = 1
 	statusStatsLabel.Text = "💀 Kills : 0\n🏰 Donjons relancés : 0\n⏱ Temps de session : 00:00\n📦 Butins : 0 | 💰 Ventes : 0"
-	statusStatsLabel.TextColor3 = Color3.fromRGB(200, 200, 240)
+	statusStatsLabel.TextColor3 = colorTextLight
 	statusStatsLabel.TextSize = 12
 	statusStatsLabel.LineHeight = 1.35
 	statusStatsLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -1085,64 +1210,72 @@ local function createUltimateGUI()
 	statusStatsLabel.Parent = statusStatsFrame
 	statusStatsFrame.Parent = pageStatus
 
-	createSectionHeader(pageStatus, "MODULES ACTIFS", 3)
-	createToggleRow(pageStatus, "🤖 Auto Attaquer les Monstres", "AutoAttack", 4)
-	createToggleRow(pageStatus, "🪙 Auto Collecter le Butin (Loot)", "AutoCollect", 5)
-	createToggleRow(pageStatus, "❤️ Auto Soin (Heal)", "AutoHeal", 6)
-	createToggleRow(pageStatus, "🛍️ Auto Vendre l'Inventaire", "AutoSell", 7)
-	createToggleRow(pageStatus, "🔄 Auto Relancer le Donjon", "AutoRetry", 8)
-	createToggleRow(pageStatus, "🚪 Auto Rejoindre en Donjon", "AutoJoinDungeon", 9)
+	createSectionHeader(pageStatus, "AUTOMATISATIONS RAPIDES", 3)
+	createToggleRow(pageStatus, "🤖 Auto Attaquer les Monstres", "rbxassetid://6035043132", "AutoAttack", 4)
+	createToggleRow(pageStatus, "🪙 Auto Collecter le Butin", "rbxassetid://6034287523", "AutoCollect", 5)
+	createToggleRow(pageStatus, "❤️ Auto Soin (Heal)", "rbxassetid://6034287517", "AutoHeal", 6)
+	createToggleRow(pageStatus, "🛍️ Auto Vendre l'Inventaire", "rbxassetid://6034287514", "AutoSell", 7)
+	createToggleRow(pageStatus, "🔄 Auto Relancer le Donjon", "rbxassetid://6031768426", "AutoRetry", 8)
+	createToggleRow(pageStatus, "🚪 Auto Rejoindre en Donjon", "rbxassetid://6034855071", "AutoJoinDungeon", 9)
 
 	-- ============================================
-	-- ONGLET 2 : COMBAT
+	-- ONGLET 2 : COMBAT (VRAIS DROPDOWNS)
 	-- ============================================
 	createSectionHeader(pageCombat, "LOGIQUE D'ÉQUIPEMENT", 1)
-	createDropdownRow(pageCombat, "⚙️ Mode d'Équipement :", CONFIG.EquipMode, {"Both", "Weapon Only", "Element Only", "None"}, 2, function(newVal)
+	createDropdownRow(pageCombat, "⚙️ Mode d'Équipement :", "rbxassetid://6031289116", CONFIG.EquipMode, {"Both", "Weapon Only", "Element Only", "None"}, 2, function(newVal)
 		CONFIG.EquipMode = newVal
 	end)
 
 	local toolsList = getAvailableTools()
-	createDropdownRow(pageCombat, "⚔️ Arme Principale :", CONFIG.SelectedWeapon, toolsList, 3, function(newVal)
+	createDropdownRow(pageCombat, "⚔️ Arme Principale :", "rbxassetid://6035043132", CONFIG.SelectedWeapon, toolsList, 3, function(newVal)
 		CONFIG.SelectedWeapon = newVal
 	end)
 
-	createDropdownRow(pageCombat, "🔮 Outil Élément :", CONFIG.SelectedElement, toolsList, 4, function(newVal)
+	createDropdownRow(pageCombat, "🔮 Outil Élément :", "rbxassetid://6034287517", CONFIG.SelectedElement, toolsList, 4, function(newVal)
 		CONFIG.SelectedElement = newVal
 	end)
 
 	createSectionHeader(pageCombat, "PARAMÈTRES D'ATTAQUE", 5)
-	createDropdownRow(pageCombat, "🔥 Mode de Combat :", CONFIG.AttackMode, {"Sword & Skills", "Sword Only", "Skills Only"}, 6, function(newVal)
+	createDropdownRow(pageCombat, "🔥 Mode de Combat :", "rbxassetid://6035043132", CONFIG.AttackMode, {"Sword & Skills", "Sword Only", "Skills Only"}, 6, function(newVal)
 		CONFIG.AttackMode = newVal
 	end)
 
-	createInputRow(pageCombat, "⏱️ Délai Attaque Min (s) :", CONFIG.SwingDelayMin, 7, function(box, text)
+	createInputRow(pageCombat, "⏱️ Délai Attaque Min (s) :", "rbxassetid://6031768426", CONFIG.SwingDelayMin, 7, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 0.01 and val <= 2 then CONFIG.SwingDelayMin = val else box.Text = tostring(CONFIG.SwingDelayMin) end
 	end)
 
-	createInputRow(pageCombat, "⏱️ Délai Attaque Max (s) :", CONFIG.SwingDelayMax, 8, function(box, text)
+	createInputRow(pageCombat, "⏱️ Délai Attaque Max (s) :", "rbxassetid://6031768426", CONFIG.SwingDelayMax, 8, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 0.01 and val <= 2 then CONFIG.SwingDelayMax = val else box.Text = tostring(CONFIG.SwingDelayMax) end
 	end)
 
-	createInputRow(pageCombat, "📏 Distance d'Attaque (studs) :", CONFIG.MaxAttackDistance, 9, function(box, text)
+	createInputRow(pageCombat, "📏 Distance d'Attaque (studs) :", "rbxassetid://6034855071", CONFIG.MaxAttackDistance, 9, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 1 and val <= 50 then CONFIG.MaxAttackDistance = val else box.Text = tostring(CONFIG.MaxAttackDistance) end
 	end)
 
-	createSectionHeader(pageCombat, "COMPÉTENCES AUTOS (SKILLS)", 10)
+	createSectionHeader(pageCombat, "SORTS & MAGIES ACTIVES", 10)
 	
-	-- Flat active slots selector (Clay version)
 	local function createSkillsRow(parent, layoutOrder)
 		local frame = Instance.new("Frame")
 		frame.Size = UDim2.new(1, 0, 0, 36)
 		frame.BackgroundTransparency = 1
 		frame.LayoutOrder = layoutOrder
 
+		local icon = Instance.new("ImageLabel")
+		icon.Size = UDim2.new(0, 14, 0, 14)
+		icon.Position = UDim2.new(0, 4, 0.5, -7)
+		icon.BackgroundTransparency = 1
+		icon.Image = "rbxassetid://6034287517"
+		icon.ImageColor3 = colorMintActive
+		icon.Parent = frame
+
 		local lbl = Instance.new("TextLabel")
-		lbl.Size = UDim2.new(0.38, 0, 1, 0)
+		lbl.Size = UDim2.new(0.32, 0, 1, 0)
+		lbl.Position = UDim2.new(0, 24, 0, 0)
 		lbl.BackgroundTransparency = 1
-		lbl.Text = "🌀 Slots Actifs :"
+		lbl.Text = "Slots Actifs :"
 		lbl.TextColor3 = Color3.fromRGB(200, 200, 220)
 		lbl.TextSize = 11
 		lbl.TextXAlignment = Enum.TextXAlignment.Left
@@ -1155,9 +1288,9 @@ local function createUltimateGUI()
 			btn.Position = UDim2.new(0.4 + (slot - 1) * 0.15, 0, 0.5, -13)
 			
 			local isActivated = table.find(CONFIG.SelectedSkills, slot) ~= nil
-			btn.BackgroundColor3 = isActivated and Color3.fromRGB(0, 180, 255) or Color3.fromRGB(30, 30, 48)
+			btn.BackgroundColor3 = isActivated and colorMintActive or Color3.fromRGB(18, 38, 30)
 			btn.Text = "Slot " .. slot
-			btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+			btn.TextColor3 = isActivated and Color3.fromRGB(12, 28, 22) or Color3.fromRGB(255, 255, 255)
 			btn.TextSize = 10
 			btn.Font = Enum.Font.GothamBold
 			
@@ -1167,7 +1300,7 @@ local function createUltimateGUI()
 
 			local strokeS = Instance.new("UIStroke")
 			strokeS.Thickness = 2
-			strokeS.Color = isActivated and Color3.fromRGB(80, 210, 255) or Color3.fromRGB(42, 42, 62)
+			strokeS.Color = isActivated and Color3.fromRGB(180, 255, 220) or colorEmeraldBorder
 			strokeS.Parent = btn
 
 			local gradS = Instance.new("UIGradient")
@@ -1182,13 +1315,15 @@ local function createUltimateGUI()
 				local idx = table.find(CONFIG.SelectedSkills, slot)
 				if idx then
 					table.remove(CONFIG.SelectedSkills, idx)
-					animateColor(btn, "BackgroundColor3", Color3.fromRGB(30, 30, 48))
-					strokeS.Color = Color3.fromRGB(42, 42, 62)
+					animateColor(btn, "BackgroundColor3", Color3.fromRGB(18, 38, 30))
+					btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+					strokeS.Color = colorEmeraldBorder
 				else
 					table.insert(CONFIG.SelectedSkills, slot)
 					table.sort(CONFIG.SelectedSkills)
-					animateColor(btn, "BackgroundColor3", Color3.fromRGB(0, 180, 255))
-					strokeS.Color = Color3.fromRGB(80, 210, 255)
+					animateColor(btn, "BackgroundColor3", colorMintActive)
+					btn.TextColor3 = Color3.fromRGB(12, 28, 22)
+					strokeS.Color = Color3.fromRGB(180, 255, 220)
 				end
 			end)
 			btn.Parent = frame
@@ -1199,7 +1334,7 @@ local function createUltimateGUI()
 	end
 	createSkillsRow(pageCombat, 11)
 
-	createInputRow(pageCombat, "⏱️ Délai entre sorts (s) :", CONFIG.SkillDelay, 12, function(box, text)
+	createInputRow(pageCombat, "⏱️ Délai entre sorts (s) :", "rbxassetid://6031768426", CONFIG.SkillDelay, 12, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 0 and val <= 10 then CONFIG.SkillDelay = val else box.Text = tostring(CONFIG.SkillDelay) end
 	end)
@@ -1208,16 +1343,16 @@ local function createUltimateGUI()
 	-- ONGLET 3 : PARCOURS & TELEPORTATION
 	-- ============================================
 	createSectionHeader(pageTP, "RÉGLAGES DES MOUVEMENTS", 1)
-	createDropdownRow(pageTP, "📍 Position relative :", CONFIG.TP_Position, {"Top", "Bottom", "Behind", "Front", "Left", "Right"}, 2, function(newVal)
+	createDropdownRow(pageTP, "📍 Position relative :", "rbxassetid://6034855071", CONFIG.TP_Position, {"Top", "Bottom", "Behind", "Front", "Left", "Right"}, 2, function(newVal)
 		CONFIG.TP_Position = newVal
 	end)
 
-	createInputRow(pageTP, "📏 Distance relative (studs) :", CONFIG.TP_Distance, 3, function(box, text)
+	createInputRow(pageTP, "📏 Distance relative (studs) :", "rbxassetid://6034855071", CONFIG.TP_Distance, 3, function(box, text)
 		local val = tonumber(text)
 		if val and val >= -10 and val <= 25 then CONFIG.TP_Distance = val else box.Text = tostring(CONFIG.TP_Distance) end
 	end)
 
-	createInputRow(pageTP, "📐 Offset Manuel (X,Y,Z) :", CONFIG.TP_Offset_X .. "," .. CONFIG.TP_Offset_Y .. "," .. CONFIG.TP_Offset_Z, 4, function(box, text)
+	createInputRow(pageTP, "📐 Offset Manuel (X,Y,Z) :", "rbxassetid://6034855071", CONFIG.TP_Offset_X .. "," .. CONFIG.TP_Offset_Y .. "," .. CONFIG.TP_Offset_Z, 4, function(box, text)
 		local parts = {}
 		for part in text:gmatch("[^,]+") do table.insert(parts, tonumber(part)) end
 		if #parts == 3 then
@@ -1229,63 +1364,64 @@ local function createUltimateGUI()
 		end
 	end)
 
-	createInputRow(pageTP, "⚡ Vitesse de Tween (studs/s) :", CONFIG.TweenSpeed, 5, function(box, text)
+	createInputRow(pageTP, "⚡ Vitesse de Tween (studs/s) :", "rbxassetid://6031768426", CONFIG.TweenSpeed, 5, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 10 and val <= 250 then CONFIG.TweenSpeed = val else box.Text = tostring(CONFIG.TweenSpeed) end
 	end)
 
-	createSectionHeader(pageTP, "SÉCURITÉ & ANTI-BAN", 6)
-	createToggleRow(pageTP, "🎲 Activer Déplacement Aléatoire", "RandomizeOffset", 7)
-	createInputRow(pageTP, "🎲 Marge Aléatoire (studs) :", CONFIG.RandomOffsetRange, 8, function(box, text)
+	createSectionHeader(pageTP, "SÉCURITÉ & DEPLACEMENT", 6)
+	createToggleRow(pageTP, "🎲 Activer Déplacement Aléatoire", "rbxassetid://6031768426", "RandomizeOffset", 7)
+	createInputRow(pageTP, "🎲 Marge Aléatoire (studs) :", "rbxassetid://6031768426", CONFIG.RandomOffsetRange, 8, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 0.1 and val <= 10 then CONFIG.RandomOffsetRange = val else box.Text = tostring(CONFIG.RandomOffsetRange) end
 	end)
 
-	createToggleRow(pageTP, "👻 Mode Noclip Permanent (Traverser)", "NoclipPermanent", 9)
+	createToggleRow(pageTP, "👻 Mode Noclip Permanent", "rbxassetid://6034855071", "NoclipPermanent", 9)
 
 	-- ============================================
 	-- ONGLET 4 : DONJON & VENTE
 	-- ============================================
 	createSectionHeader(pageDungeon, "LANCEMENT DE DONJONS", 1)
-	createDropdownRow(pageDungeon, "🏰 Nom du Donjon :", CONFIG.DungeonName, DUNGEONS_LIST, 2, function(newVal)
+	createDropdownRow(pageDungeon, "🏰 Nom du Donjon :", "rbxassetid://6034287517", CONFIG.DungeonName, DUNGEONS_LIST, 2, function(newVal)
 		CONFIG.DungeonName = newVal
 	end)
 
-	createDropdownRow(pageDungeon, "🔥 Difficulté :", CONFIG.Difficulty, DIFFICULTIES_LIST, 3, function(newVal)
+	createDropdownRow(pageDungeon, "🔥 Difficulté :", "rbxassetid://6034287517", CONFIG.Difficulty, DIFFICULTIES_LIST, 3, function(newVal)
 		CONFIG.Difficulty = newVal
 	end)
 
-	createInputRow(pageDungeon, "⏱️ Délai de Relancement (s) :", CONFIG.RetryDelay, 4, function(box, text)
+	createInputRow(pageDungeon, "⏱️ Délai de Relancement (s) :", "rbxassetid://6031768426", CONFIG.RetryDelay, 4, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 0 and val <= 15 then CONFIG.RetryDelay = val else box.Text = tostring(CONFIG.RetryDelay) end
 	end)
 
-	createInputRow(pageDungeon, "💚 Seuil auto-soin (vie %) :", math.floor(CONFIG.HealThreshold * 100), 5, function(box, text)
+	createInputRow(pageDungeon, "💚 Seuil auto-soin (vie %) :", "rbxassetid://6034287517", math.floor(CONFIG.HealThreshold * 100), 5, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 5 and val <= 100 then CONFIG.HealThreshold = val / 100 else box.Text = tostring(math.floor(CONFIG.HealThreshold * 100)) end
 	end)
 
-	createSectionHeader(pageDungeon, "FILTRES D'AUTO-VENTE", 6)
-	createToggleRow(pageDungeon, "🟢 Vendre objets COMMUNS", "SellCommon", 7)
-	createToggleRow(pageDungeon, "🔵 Vendre objets PEU COMMUNS", "SellUncommon", 8)
-	createToggleRow(pageDungeon, "🟣 Vendre objets RARES", "SellRare", 9)
+	createSectionHeader(pageDungeon, "AUTO-VENTE D'INVENTAIRE", 6)
+	createToggleRow(pageDungeon, "🟢 Vendre objets COMMUNS (Common)", "rbxassetid://6034287514", "SellCommon", 7)
+	createToggleRow(pageDungeon, "🔵 Vendre objets PEU COMMUNS (Uncommon)", "rbxassetid://6034287514", "SellUncommon", 8)
+	createToggleRow(pageDungeon, "🟣 Vendre objets RARES (Rare)", "rbxassetid://6034287514", "SellRare", 9)
 
 	-- ============================================
-	-- ONGLET 5 : SYSTEME, PHYSIQUE & FERMETURE
+	-- ONGLET 5 : SYSTEME
 	-- ============================================
 	createSectionHeader(pageSystem, "PROPRIÉTÉS PHYSIQUES", 1)
-	createInputRow(pageSystem, "⚡ Vitesse de marche (WS) :", CONFIG.WalkSpeed, 2, function(box, text)
+	createInputRow(pageSystem, "⚡ Vitesse de marche (WS) :", "rbxassetid://6031768426", CONFIG.WalkSpeed, 2, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 16 and val <= 150 then CONFIG.WalkSpeed = val else box.Text = tostring(CONFIG.WalkSpeed) end
 	end)
 
-	createInputRow(pageSystem, "🚀 Puissance de Saut (JP) :", CONFIG.JumpPower, 3, function(box, text)
+	createInputRow(pageSystem, "🚀 Puissance de Saut (JP) :", "rbxassetid://6031768426", CONFIG.JumpPower, 3, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 50 and val <= 250 then CONFIG.JumpPower = val else box.Text = tostring(CONFIG.JumpPower) end
 	end)
 
-	createSectionHeader(pageSystem, "OPTIMISATION SYSTÈME", 4)
-	-- Rendu 3D (Clay style)
+	createSectionHeader(pageSystem, "OPTIMISATION", 4)
+	
+	-- 3D Rendering (Clay Mint Style)
 	local optiFrame = Instance.new("Frame")
 	optiFrame.Size = UDim2.new(1, 0, 0, 34)
 	optiFrame.BackgroundTransparency = 1
@@ -1294,9 +1430,9 @@ local function createUltimateGUI()
 	local optiBtn = Instance.new("TextButton")
 	optiBtn.Size = UDim2.new(0, 18, 0, 18)
 	optiBtn.Position = UDim2.new(0, 4, 0.5, -9)
-	optiBtn.BackgroundColor3 = CONFIG.Disable3DRendering and Color3.fromRGB(0, 180, 255) or Color3.fromRGB(24, 24, 38)
+	optiBtn.BackgroundColor3 = CONFIG.Disable3DRendering and colorMintActive or Color3.fromRGB(18, 38, 30)
 	optiBtn.Text = CONFIG.Disable3DRendering and "✓" or ""
-	optiBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	optiBtn.TextColor3 = Color3.fromRGB(12, 28, 22)
 	optiBtn.TextSize = 10
 	optiBtn.Font = Enum.Font.GothamBold
 	
@@ -1306,7 +1442,7 @@ local function createUltimateGUI()
 
 	local optiStroke = Instance.new("UIStroke")
 	optiStroke.Thickness = 2
-	optiStroke.Color = CONFIG.Disable3DRendering and Color3.fromRGB(80, 210, 255) or Color3.fromRGB(42, 42, 62)
+	optiStroke.Color = CONFIG.Disable3DRendering and Color3.fromRGB(180, 255, 220) or colorEmeraldBorder
 	optiStroke.Parent = optiBtn
 
 	local optiGrad = Instance.new("UIGradient")
@@ -1323,7 +1459,7 @@ local function createUltimateGUI()
 	optiLbl.Position = UDim2.new(0, 34, 0, 0)
 	optiLbl.BackgroundTransparency = 1
 	optiLbl.Text = "🌙 Mode nuit (Désactiver Rendu 3D)"
-	optiLbl.TextColor3 = Color3.fromRGB(220, 220, 240)
+	optiLbl.TextColor3 = colorTextLight
 	optiLbl.TextSize = 11
 	optiLbl.TextXAlignment = Enum.TextXAlignment.Left
 	optiLbl.Font = Enum.Font.Gotham
@@ -1331,8 +1467,8 @@ local function createUltimateGUI()
 
 	optiBtn.MouseButton1Click:Connect(function()
 		CONFIG.Disable3DRendering = not CONFIG.Disable3DRendering
-		animateColor(optiBtn, "BackgroundColor3", CONFIG.Disable3DRendering and Color3.fromRGB(0, 180, 255) or Color3.fromRGB(24, 24, 38))
-		optiStroke.Color = CONFIG.Disable3DRendering and Color3.fromRGB(80, 210, 255) or Color3.fromRGB(42, 42, 62)
+		animateColor(optiBtn, "BackgroundColor3", CONFIG.Disable3DRendering and colorMintActive or Color3.fromRGB(18, 38, 30))
+		optiStroke.Color = CONFIG.Disable3DRendering and Color3.fromRGB(180, 255, 220) or colorEmeraldBorder
 		optiBtn.Text = CONFIG.Disable3DRendering and "✓" or ""
 		pcall(function()
 			RunService:Set3dRenderingEnabled(not CONFIG.Disable3DRendering)
@@ -1340,11 +1476,45 @@ local function createUltimateGUI()
 	end)
 	optiFrame.Parent = pageSystem
 
+	createSectionHeader(pageSystem, "FERMETURE", 6)
+	
+	local closeBtn = Instance.new("TextButton")
+	closeBtn.Size = UDim2.new(1, 0, 0, 36)
+	closeBtn.BackgroundColor3 = colorCoralWarning
+	closeBtn.Text = "QUITTER & FERMER L'INTERFACE"
+	closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	closeBtn.TextSize = 12
+	closeBtn.Font = Enum.Font.GothamBold
+	closeBtn.LayoutOrder = 7
+	
+	local closeCorner = Instance.new("UICorner")
+	closeCorner.CornerRadius = UDim.new(0, 8)
+	closeCorner.Parent = closeBtn
+
+	local closeStroke = Instance.new("UIStroke")
+	closeStroke.Thickness = 2
+	closeStroke.Color = Color3.fromRGB(255, 180, 190)
+	closeStroke.Parent = closeBtn
+	
+	closeBtn.MouseEnter:Connect(function()
+		animateColor(closeBtn, "BackgroundColor3", Color3.fromRGB(255, 95, 128))
+	end)
+	closeBtn.MouseLeave:Connect(function()
+		animateColor(closeBtn, "BackgroundColor3", colorCoralWarning)
+	end)
+
+	closeBtn.MouseButton1Click:Connect(function()
+		stopFarm()
+		pcall(function()
+			RunService:Set3dRenderingEnabled(true)
+		end)
+		screenGui:Destroy()
+	end)
+	closeBtn.Parent = pageSystem
+
 	-- ============================================
 	-- INITIALISATION ET MISE A JOUR
 	-- ============================================
-	
-	-- Par défaut, afficher le premier onglet (Status)
 	selectTab("Status")
 
 	-- Update des stats asynchrones
@@ -1378,18 +1548,18 @@ local function createUltimateGUI()
 			if isRunning then
 				stopFarm()
 				mainToggleBtn.Text = "DÉMARRER L'AUTOFARM [F6]"
-				mainToggleBtn.BackgroundColor3 = Color3.fromRGB(40, 180, 100)
-				toggleStroke.Color = Color3.fromRGB(90, 220, 140)
+				mainToggleBtn.BackgroundColor3 = colorMintActive
+				toggleStroke.Color = Color3.fromRGB(180, 255, 220)
 			else
 				startFarm()
 				mainToggleBtn.Text = "ARRÊTER L'AUTOFARM [F6]"
-				mainToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
-				toggleStroke.Color = Color3.fromRGB(240, 90, 90)
+				mainToggleBtn.BackgroundColor3 = colorCoralWarning
+				toggleStroke.Color = Color3.fromRGB(255, 180, 190)
 			end
 		end
 	end)
 
-	print("✅ GUI ULTIME V11 CLAYMORPHISM & WINDOWS STYLE CHARGÉE !")
+	print("✅ GUI ULTIME V12 CLAYMORPHISM CHARGÉE !")
 end
 
 -- ============================================================
