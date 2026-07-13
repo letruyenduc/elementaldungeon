@@ -1,6 +1,6 @@
 -- ======================================================
--- AUTOFARM ULTIME – VERSION GUI V14 (GAME THEMED STYLE)
--- Style officiel "Dungeon Creator" - Format Paysage, FredokaOne, Boutons Windows
+-- AUTOFARM ULTIME – VERSION GUI V14.1 (BUG FIX DISPLAY)
+-- Style officiel "Dungeon Creator" - Correction des variables nil
 -- ======================================================
 
 repeat
@@ -595,7 +595,7 @@ function startFarm()
 end
 
 -- ============================================================
--- 11. CRÉATION DE L'INTERFACE AU STYLE OFFICIEL DU JEU (V14)
+-- 11. CRÉATION DE L'INTERFACE AU STYLE OFFICIEL DU JEU (V14.1)
 -- ============================================================
 
 local function animateColor(guiObject, property, targetColor, duration)
@@ -652,7 +652,6 @@ local function createUltimateGUI()
 	titleText.TextColor3 = colorTextWhite
 	titleText.TextSize = 18
 	titleText.Font = Enum.Font.FredokaOne
-	titleText.TextXAlignment = Enum.TextXAlignment.Left
 	
 	local titleStroke = Instance.new("UIStroke")
 	titleStroke.Thickness = 1.5
@@ -732,6 +731,7 @@ local function createUltimateGUI()
 	sidebarPad.Parent = sidebar
 
 	-- Conteneur de pages à droite
+	local pageContainer = Instance.new("Frame")
 	pageContainer.Size = UDim2.new(1, -165, 1, -55)
 	pageContainer.Position = UDim2.new(0, 155, 0, 45)
 	pageContainer.BackgroundTransparency = 1
@@ -1581,7 +1581,7 @@ local function createUltimateGUI()
 		if val and val >= 50 and val <= 250 then CONFIG.JumpPower = val else box.Text = tostring(CONFIG.JumpPower) end
 	end)
 
-	createSectionHeader(pageSystem, "OPTIMISATION & FERMETURE", 4)
+	createSectionHeader(pageSystem, "OPTIMISATION", 4)
 	
 	-- 3D Rendering (Clay style)
 	local optiFrame = Instance.new("Frame")
@@ -1687,7 +1687,7 @@ local function createUltimateGUI()
 		end
 	end)
 
-	print("GUI ULTIME V14 CHARGEE !")
+	print("GUI ULTIME V14.1 CHARGEE !")
 end
 
 -- ============================================================
