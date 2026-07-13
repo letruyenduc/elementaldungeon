@@ -149,12 +149,12 @@ end
 
 local CONFIG = {
 	AutoFarm = false, -- Mouvement de mobs en mobs
-	AutoAttack = false,
-	AutoHeal = false,
-	AutoCollect = false,
-	AutoEquip = false,
-	AutoSkillsElement = false, -- Auto cast sorts magiques
-	AutoSkillsSword = false,   -- Auto cast sorts d'épées
+	AutoAttack = true,
+	AutoHeal = true,
+	AutoCollect = true,
+	AutoEquip = true,
+	AutoSkillsElement = true, -- Auto cast sorts magiques
+	AutoSkillsSword = true,   -- Auto cast sorts d'épées
 	AutoSell = false,
 	AutoRetry = false,
 	AutoJoinDungeon = false,
