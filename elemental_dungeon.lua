@@ -339,14 +339,17 @@ end
 
 local currentTarget = nil
 function getClosestMob()
-	if currentTarget and currentTarget.Parent and currentTarget:FindFirstChild("Humanoid") and currentTarget.Humanoid.Health > 0 then
-		local character = LocalPlayer.Character
-		local hrp = character and character:FindFirstChild("HumanoidRootPart")
-		local targetPart = currentTarget:FindFirstChild("HumanoidRootPart") or currentTarget:FindFirstChild("PrimaryPart")
-		if hrp and targetPart then
-			local dist = (hrp.Position - targetPart.Position).Magnitude
-			if dist < 80 then
-				return currentTarget
+	if currentTarget and currentTarget.Parent then
+		local humanoid = currentTarget:FindFirstChild("Humanoid")
+		if humanoid and humanoid.Health > 0 then
+			local character = LocalPlayer.Character
+			local hrp = character and character:FindFirstChild("HumanoidRootPart")
+			local targetPart = currentTarget:FindFirstChild("HumanoidRootPart") or currentTarget:FindFirstChild("PrimaryPart")
+			if hrp and targetPart then
+				local dist = (hrp.Position - targetPart.Position).Magnitude
+				if dist < 80 then
+					return currentTarget
+				end
 			end
 		end
 	end
@@ -942,14 +945,6 @@ local function createUltimateGUI()
 		btnStroke.Color = colorBorderDark
 		btnStroke.Parent = btn
 		btn.Parent = frame
-
-		local gradient = Instance.new("UIGradient")
-		gradient.Rotation = 90
-		gradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-			ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 200, 200))
-		})
-		gradient.Parent = btn
 
 		local icon = Instance.new("ImageLabel")
 		icon.Size = UDim2.new(0, 14, 0, 14)
