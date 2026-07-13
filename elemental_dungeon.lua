@@ -1,6 +1,6 @@
 -- ======================================================
--- AUTOFARM ULTIME – VERSION GUI V18 (COMBAT STABILIZED)
--- Style officiel "Dungeon Creator" - Séparation Mouvement/Combat, Alternance Both, FredokaOne
+-- AUTOFARM ULTIME – VERSION GUI V19 (DECOUPLED SKILLS)
+-- Style officiel "Dungeon Creator" - Compétences Épée vs Élément Découplées
 -- ======================================================
 
 repeat
@@ -147,12 +147,13 @@ end
 -- ============================================================
 
 local CONFIG = {
-	AutoFarm = false, -- Le mouvement automatique (tweening de mobs en mobs)
+	AutoFarm = false, -- Mouvement de mobs en mobs
 	AutoAttack = false,
 	AutoHeal = false,
 	AutoCollect = false,
 	AutoEquip = false,
-	AutoSkills = false,
+	AutoSkillsElement = false, -- Auto cast sorts magiques
+	AutoSkillsSword = false,   -- Auto cast sorts d'épées
 	AutoSell = false,
 	AutoRetry = false,
 	AutoJoinDungeon = false,
@@ -177,8 +178,9 @@ local CONFIG = {
 	RandomizeOffset = false,
 	RandomOffsetRange = 1,
 	
-	-- Skills
-	SelectedSkills = { 1, 2, 3, 4 },
+	-- Skills Découplés
+	SelectedSkillsElement = { 1, 2, 3, 4 },
+	SelectedSkillsSword = { 1, 2, 3, 4 },
 	SkillDelay = 0.5,
 
 	-- Dungeon
@@ -579,11 +581,17 @@ local function runBackgroundLoop()
 								if CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Sword Only" then
 									swing()
 								end
+								-- Auto cast sorts d'épées pendant le tour de l'épée
+								if CONFIG.AutoSkillsSword and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
+									for _, slot in ipairs(CONFIG.SelectedSkillsSword) do
+										task.spawn(useSkill, slot)
+									end
+								end
 							else
-								-- Tour Sorts
+								-- Tour Sorts Élémentaires
 								autoEquipSpecific(CONFIG.SelectedElement)
-								if CONFIG.AutoSkills and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
-									for _, slot in ipairs(CONFIG.SelectedSkills) do
+								if CONFIG.AutoSkillsElement and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
+									for _, slot in ipairs(CONFIG.SelectedSkillsElement) do
 										task.spawn(useSkill, slot)
 									end
 								end
@@ -592,17 +600,35 @@ local function runBackgroundLoop()
 							-- Équipements uniques standards
 							if mode == "Weapon Only" then
 								autoEquipSpecific(CONFIG.SelectedWeapon)
+								if CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Sword Only" then
+									swing()
+								end
+								if CONFIG.AutoSkillsSword and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
+									for _, slot in ipairs(CONFIG.SelectedSkillsSword) do
+										task.spawn(useSkill, slot)
+									end
+								end
 							elseif mode == "Element Only" then
 								autoEquipSpecific(CONFIG.SelectedElement)
-							end
-
-							if CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Sword Only" then
-								swing()
-							end
-
-							if CONFIG.AutoSkills and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
-								for _, slot in ipairs(CONFIG.SelectedSkills) do
-									task.spawn(useSkill, slot)
+								if CONFIG.AutoSkillsElement and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
+									for _, slot in ipairs(CONFIG.SelectedSkillsElement) do
+										task.spawn(useSkill, slot)
+									end
+								end
+							else
+								-- Mode None : lance les deux selon activation
+								if CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Sword Only" then
+									swing()
+								end
+								if CONFIG.AutoSkillsSword and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
+									for _, slot in ipairs(CONFIG.SelectedSkillsSword) do
+										task.spawn(useSkill, slot)
+									end
+								end
+								if CONFIG.AutoSkillsElement and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
+									for _, slot in ipairs(CONFIG.SelectedSkillsElement) do
+										task.spawn(useSkill, slot)
+									end
 								end
 							end
 						end
@@ -642,7 +668,7 @@ local function runBackgroundLoop()
 end
 
 -- ============================================================
--- 11. CRÉATION DE L'INTERFACE AU STYLE OFFICIEL DU JEU (V18)
+-- 11. CRÉATION DE L'INTERFACE AU STYLE OFFICIEL DU JEU (V19)
 -- ============================================================
 
 local function createUltimateGUI()
@@ -652,16 +678,16 @@ local function createUltimateGUI()
 	screenGui.ResetOnSpawn = false
 	screenGui.Parent = CoreGui
 
-	-- Palette de couleurs inspirée du Dungeon Creator (Bleu ardoise et contours noirs)
-	local colorSlateBackground = Color3.fromRGB(36, 50, 67)  -- Fond principal
-	local colorSlateSidebar = Color3.fromRGB(24, 38, 51)     -- Sidebar & sous-panels
-	local colorBorderDark = Color3.fromRGB(15, 22, 30)       -- Contour noir épais
-	local colorTextWhite = Color3.fromRGB(255, 255, 255)     -- Texte blanc
-	local colorTextInactive = Color3.fromRGB(150, 175, 195)  -- Texte désactivé
+	-- Palette de couleurs
+	local colorSlateBackground = Color3.fromRGB(36, 50, 67)
+	local colorSlateSidebar = Color3.fromRGB(24, 38, 51)
+	local colorBorderDark = Color3.fromRGB(15, 22, 30)
+	local colorTextWhite = Color3.fromRGB(255, 255, 255)
+	local colorTextInactive = Color3.fromRGB(150, 175, 195)
 	
-	local colorGreenActive = Color3.fromRGB(0, 200, 80)      -- Bouton vert (Démarrer)
-	local colorRedWarning = Color3.fromRGB(220, 50, 50)      -- Bouton rouge (Quitter / Fermer)
-	local colorBlueSelect = Color3.fromRGB(40, 130, 220)     -- Bouton bleu (Medium / Options)
+	local colorGreenActive = Color3.fromRGB(0, 200, 80)
+	local colorRedWarning = Color3.fromRGB(220, 50, 50)
+	local colorBlueSelect = Color3.fromRGB(40, 130, 220)
 
 	-- Frame principal (Format Paysage 620x420)
 	local mainFrame = Instance.new("Frame")
@@ -674,7 +700,7 @@ local function createUltimateGUI()
 	mainFrame.ClipsDescendants = true
 	mainFrame.Parent = screenGui
 
-	-- Contour 3D épais noir
+	-- Contour 3D
 	local border = Instance.new("UIStroke")
 	border.Thickness = 3
 	border.Color = colorBorderDark
@@ -701,7 +727,7 @@ local function createUltimateGUI()
 	titleStroke.Parent = titleText
 	titleText.Parent = mainFrame
 
-	-- Gros bouton Fermer Windows circulaire rouge (Top Right)
+	-- Bouton Fermer Windows
 	local closeBtn = Instance.new("TextButton")
 	closeBtn.Size = UDim2.new(0, 28, 0, 28)
 	closeBtn.Position = UDim2.new(1, -38, 0, 8)
@@ -712,7 +738,7 @@ local function createUltimateGUI()
 	closeBtn.Font = Enum.Font.FredokaOne
 	
 	local closeCorner = Instance.new("UICorner")
-	closeCorner.CornerRadius = UDim.new(0.5, 0) -- Rond
+	closeCorner.CornerRadius = UDim.new(0.5, 0)
 	closeCorner.Parent = closeBtn
 
 	local closeStroke = Instance.new("UIStroke")
@@ -736,7 +762,7 @@ local function createUltimateGUI()
 		animateColor(closeBtn, "BackgroundColor3", colorRedWarning)
 	end)
 	closeBtn.MouseButton1Click:Connect(function()
-		stopFarm()
+		CONFIG.AutoFarm = false
 		pcall(function()
 			RunService:Set3dRenderingEnabled(true)
 		end)
@@ -782,7 +808,6 @@ local function createUltimateGUI()
 	local pages = {}
 	local tabButtons = {}
 
-	-- Helper de création de ScrollingFrame
 	local function createTabPage(name)
 		local scroll = Instance.new("ScrollingFrame")
 		scroll.Size = UDim2.new(1, 0, 1, 0)
@@ -813,14 +838,12 @@ local function createUltimateGUI()
 		return scroll
 	end
 
-	-- Initialisation des pages
 	local pageStatus = createTabPage("Status")
 	local pageCombat = createTabPage("Combat")
 	local pageTP = createTabPage("TP")
 	local pageDungeon = createTabPage("Dungeon")
 	local pageSystem = createTabPage("System")
 
-	-- Navigation switch
 	local function selectTab(tabName)
 		for name, page in pairs(pages) do
 			page.Visible = (name == tabName)
@@ -840,7 +863,6 @@ local function createUltimateGUI()
 		end
 	end
 
-	-- Créateur de boutons d'onglets verticaux
 	local function createTabButton(name, iconId, text, layoutOrder)
 		local btn = Instance.new("TextButton")
 		btn.Size = UDim2.new(1, 0, 0, 36)
@@ -1148,7 +1170,7 @@ local function createUltimateGUI()
 		track.Position = UDim2.new(0.42, 0, 0.5, -4)
 		track.BackgroundColor3 = colorSlateSidebar
 		track.BorderSizePixel = 0
-		track.Parent = frame
+		track.Parent = track
 
 		local trackCorner = Instance.new("UICorner")
 		trackCorner.CornerRadius = UDim.new(0, 4)
@@ -1207,7 +1229,6 @@ local function createUltimateGUI()
 		boxStroke.Parent = box
 		box.Parent = frame
 
-		-- Drag Logic
 		local dragging = false
 
 		local function updateValue(percentage)
@@ -1253,6 +1274,7 @@ local function createUltimateGUI()
 			end
 		end)
 
+		track.Parent = frame
 		frame.Parent = parent
 		return frame
 	end
@@ -1328,10 +1350,10 @@ local function createUltimateGUI()
 	end
 
 	-- ============================================
-	-- PAGES DEFINITIONS (REORGANIZED V18)
+	-- PAGES CONTENTS
 	-- ============================================
 
-	-- 1. STATUS TAB (START BUTTON & STATISTICS ONLY)
+	-- 1. STATUS TAB
 	local mainToggleBtn = Instance.new("TextButton")
 	mainToggleBtn.Size = UDim2.new(1, 0, 0, 45)
 	mainToggleBtn.BackgroundColor3 = colorGreenActive
@@ -1414,68 +1436,61 @@ local function createUltimateGUI()
 	statusStatsFrame.Parent = pageStatus
 
 
-	-- 2. COMBAT TAB (ALL AUTOMATIONS TO ATTACK, GEAR, SKILLS, HEALS)
+	-- 2. COMBAT TAB
 	createSectionHeader(pageCombat, "COMBAT AUTOMATIONS", 1)
 	createToggleRow(pageCombat, "Auto Attack Monsters", "rbxassetid://6035043132", "AutoAttack", 2)
 	createToggleRow(pageCombat, "Auto Equip Gear", "rbxassetid://6035043132", "AutoEquip", 3)
-	createToggleRow(pageCombat, "Auto Cast Spells", "rbxassetid://6034287517", "AutoSkills", 4)
-	createToggleRow(pageCombat, "Auto Health Healing", "rbxassetid://6034287517", "AutoHeal", 5)
+	createToggleRow(pageCombat, "Auto Health Healing", "rbxassetid://6034287517", "AutoHeal", 4)
 
-	createSectionHeader(pageCombat, "GEAR SELECTION", 6)
-	createDropdownRow(pageCombat, "Equip Mode :", "rbxassetid://6031289116", CONFIG.EquipMode, {"Both", "Weapon Only", "Element Only", "None"}, 7, function(newVal)
+	createSectionHeader(pageCombat, "GEAR SELECTION", 5)
+	createDropdownRow(pageCombat, "Equip Mode :", "rbxassetid://6031289116", CONFIG.EquipMode, {"Both", "Weapon Only", "Element Only", "None"}, 6, function(newVal)
 		CONFIG.EquipMode = newVal
 	end)
 
 	local toolsList = getAvailableTools()
-	createDropdownRow(pageCombat, "Main Weapon :", "rbxassetid://6035043132", CONFIG.SelectedWeapon, toolsList, 8, function(newVal)
+	createDropdownRow(pageCombat, "Main Weapon :", "rbxassetid://6035043132", CONFIG.SelectedWeapon, toolsList, 7, function(newVal)
 		CONFIG.SelectedWeapon = newVal
 	end)
 
-	createDropdownRow(pageCombat, "Magic Element :", "rbxassetid://6034287517", CONFIG.SelectedElement, toolsList, 9, function(newVal)
+	createDropdownRow(pageCombat, "Magic Element :", "rbxassetid://6034287517", CONFIG.SelectedElement, toolsList, 8, function(newVal)
 		CONFIG.SelectedElement = newVal
 	end)
 
-	createSectionHeader(pageCombat, "ATTACK PARAMETERS", 10)
-	createDropdownRow(pageCombat, "Attack Mode :", "rbxassetid://6035043132", CONFIG.AttackMode, {"Sword & Skills", "Sword Only", "Skills Only"}, 11, function(newVal)
+	createSectionHeader(pageCombat, "ATTACK PARAMETERS", 9)
+	createDropdownRow(pageCombat, "Attack Mode :", "rbxassetid://6035043132", CONFIG.AttackMode, {"Sword & Skills", "Sword Only", "Skills Only"}, 10, function(newVal)
 		CONFIG.AttackMode = newVal
 	end)
 
-	createInputRow(pageCombat, "Attack Delay Min (s) :", "rbxassetid://6031768426", CONFIG.SwingDelayMin, 12, function(box, text)
+	createInputRow(pageCombat, "Attack Delay Min (s) :", "rbxassetid://6031768426", CONFIG.SwingDelayMin, 11, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 0.01 and val <= 2 then CONFIG.SwingDelayMin = val else box.Text = tostring(CONFIG.SwingDelayMin) end
 	end)
 
-	createInputRow(pageCombat, "Attack Delay Max (s) :", "rbxassetid://6031768426", CONFIG.SwingDelayMax, 13, function(box, text)
+	createInputRow(pageCombat, "Attack Delay Max (s) :", "rbxassetid://6031768426", CONFIG.SwingDelayMax, 12, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 0.01 and val <= 2 then CONFIG.SwingDelayMax = val else box.Text = tostring(CONFIG.SwingDelayMax) end
 	end)
 
-	createInputRow(pageCombat, "Attack Range (studs) :", "rbxassetid://6034855071", CONFIG.MaxAttackDistance, 14, function(box, text)
+	createInputRow(pageCombat, "Attack Range (studs) :", "rbxassetid://6034855071", CONFIG.MaxAttackDistance, 13, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 1 and val <= 50 then CONFIG.MaxAttackDistance = val else box.Text = tostring(CONFIG.MaxAttackDistance) end
 	end)
 
-	createSectionHeader(pageCombat, "ACTIVE SPELL SKILLS", 15)
+	-- MAGIC SPELLS (ELEMENT)
+	createSectionHeader(pageCombat, "MAGIC ELEMENT SPELLS", 14)
+	createToggleRow(pageCombat, "Auto Cast Element Spells", "rbxassetid://6034287517", "AutoSkillsElement", 15)
 	
-	local function createSkillsRowCombat(parent, layoutOrder)
+	local function createSkillsRowElement(parent, layoutOrder)
 		local frame = Instance.new("Frame")
 		frame.Size = UDim2.new(1, 0, 0, 36)
 		frame.BackgroundTransparency = 1
 		frame.LayoutOrder = layoutOrder
 
-		local icon = Instance.new("ImageLabel")
-		icon.Size = UDim2.new(0, 14, 0, 14)
-		icon.Position = UDim2.new(0, 4, 0.5, -7)
-		icon.BackgroundTransparency = 1
-		icon.Image = "rbxassetid://6034287517"
-		icon.ImageColor3 = colorBlueSelect
-		icon.Parent = frame
-
 		local lbl = Instance.new("TextLabel")
 		lbl.Size = UDim2.new(0.32, 0, 1, 0)
 		lbl.Position = UDim2.new(0, 24, 0, 0)
 		lbl.BackgroundTransparency = 1
-		lbl.Text = "Active Slots :"
+		lbl.Text = "Magic Slots :"
 		lbl.TextColor3 = colorTextWhite
 		lbl.TextSize = 11
 		lbl.TextXAlignment = Enum.TextXAlignment.Left
@@ -1492,7 +1507,7 @@ local function createUltimateGUI()
 			btn.Size = UDim2.new(0, 42, 0, 26)
 			btn.Position = UDim2.new(0.4 + (slot - 1) * 0.15, 0, 0.5, -13)
 			
-			local isActivated = table.find(CONFIG.SelectedSkills, slot) ~= nil
+			local isActivated = table.find(CONFIG.SelectedSkillsElement, slot) ~= nil
 			btn.BackgroundColor3 = isActivated and colorBlueSelect or colorSlateSidebar
 			btn.Text = "Slot " .. slot
 			btn.TextColor3 = colorTextWhite
@@ -1509,13 +1524,13 @@ local function createUltimateGUI()
 			strokeS.Parent = btn
 
 			btn.MouseButton1Click:Connect(function()
-				local idx = table.find(CONFIG.SelectedSkills, slot)
+				local idx = table.find(CONFIG.SelectedSkillsElement, slot)
 				if idx then
-					table.remove(CONFIG.SelectedSkills, idx)
+					table.remove(CONFIG.SelectedSkillsElement, idx)
 					animateColor(btn, "BackgroundColor3", colorSlateSidebar)
 				else
-					table.insert(CONFIG.SelectedSkills, slot)
-					table.sort(CONFIG.SelectedSkills)
+					table.insert(CONFIG.SelectedSkillsElement, slot)
+					table.sort(CONFIG.SelectedSkillsElement)
 					animateColor(btn, "BackgroundColor3", colorBlueSelect)
 				end
 			end)
@@ -1523,11 +1538,75 @@ local function createUltimateGUI()
 		end
 
 		frame.Parent = parent
-		return frame
 	end
-	createSkillsRowCombat(pageCombat, 16)
+	createSkillsRowElement(pageCombat, 16)
 
-	createInputRow(pageCombat, "Spell Cast Delay (s) :", "rbxassetid://6031768426", CONFIG.SkillDelay, 17, function(box, text)
+	-- SWORD SKILLS
+	createSectionHeader(pageCombat, "SWORD ABILITIES", 17)
+	createToggleRow(pageCombat, "Auto Cast Sword Abilities", "rbxassetid://6035043132", "AutoSkillsSword", 18)
+
+	local function createSkillsRowSword(parent, layoutOrder)
+		local frame = Instance.new("Frame")
+		frame.Size = UDim2.new(1, 0, 0, 36)
+		frame.BackgroundTransparency = 1
+		frame.LayoutOrder = layoutOrder
+
+		local lbl = Instance.new("TextLabel")
+		lbl.Size = UDim2.new(0.32, 0, 1, 0)
+		lbl.Position = UDim2.new(0, 24, 0, 0)
+		lbl.BackgroundTransparency = 1
+		lbl.Text = "Sword Slots :"
+		lbl.TextColor3 = colorTextWhite
+		lbl.TextSize = 11
+		lbl.TextXAlignment = Enum.TextXAlignment.Left
+		lbl.Font = Enum.Font.GothamBold
+		
+		local lblStroke = Instance.new("UIStroke")
+		lblStroke.Thickness = 1
+		lblStroke.Color = Color3.fromRGB(0, 0, 0)
+		lblStroke.Parent = lbl
+		lbl.Parent = frame
+
+		for slot = 1, 4 do
+			local btn = Instance.new("TextButton")
+			btn.Size = UDim2.new(0, 42, 0, 26)
+			btn.Position = UDim2.new(0.4 + (slot - 1) * 0.15, 0, 0.5, -13)
+			
+			local isActivated = table.find(CONFIG.SelectedSkillsSword, slot) ~= nil
+			btn.BackgroundColor3 = isActivated and colorBlueSelect or colorSlateSidebar
+			btn.Text = "Slot " .. slot
+			btn.TextColor3 = colorTextWhite
+			btn.TextSize = 10
+			btn.Font = Enum.Font.FredokaOne
+			
+			local cornerS = Instance.new("UICorner")
+			cornerS.CornerRadius = UDim.new(0, 6)
+			cornerS.Parent = btn
+
+			local strokeS = Instance.new("UIStroke")
+			strokeS.Thickness = 2
+			strokeS.Color = colorBorderDark
+			strokeS.Parent = btn
+
+			btn.MouseButton1Click:Connect(function()
+				local idx = table.find(CONFIG.SelectedSkillsSword, slot)
+				if idx then
+					table.remove(CONFIG.SelectedSkillsSword, idx)
+					animateColor(btn, "BackgroundColor3", colorSlateSidebar)
+				else
+					table.insert(CONFIG.SelectedSkillsSword, slot)
+					table.sort(CONFIG.SelectedSkillsSword)
+					animateColor(btn, "BackgroundColor3", colorBlueSelect)
+				end
+			end)
+			btn.Parent = frame
+		end
+
+		frame.Parent = parent
+	end
+	createSkillsRowSword(pageCombat, 19)
+
+	createInputRow(pageCombat, "Ability Cast Delay (s) :", "rbxassetid://6031768426", CONFIG.SkillDelay, 20, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 0 and val <= 10 then CONFIG.SkillDelay = val else box.Text = tostring(CONFIG.SkillDelay) end
 	end)
@@ -1581,7 +1660,7 @@ local function createUltimateGUI()
 	end)
 
 
-	-- 4. DUNGEON TAB (LOBBY SETTINGS & AUTO RETRY & HEAL THRESHOLD & AUTO COLLECT DROPS)
+	-- 4. DUNGEON TAB
 	createSectionHeader(pageDungeon, "LOBBY SETTINGS", 1)
 	createDropdownRow(pageDungeon, "Dungeon Name :", "rbxassetid://6034287517", CONFIG.DungeonName, DUNGEONS_LIST, 2, function(newVal)
 		CONFIG.DungeonName = newVal
@@ -1606,10 +1685,10 @@ local function createUltimateGUI()
 	end)
 
 	createSectionHeader(pageDungeon, "LOOT COLLECT", 9)
-	createToggleRow(pageDungeon, "Auto Collect Drops", "rbxassetid://6034287523", "AutoCollect", 10) -- Moved here!
+	createToggleRow(pageDungeon, "Auto Collect Drops", "rbxassetid://6034287523", "AutoCollect", 10)
 
 
-	-- 5. SYSTEM TAB (AUTO SELL & NIGHT MODE)
+	-- 5. SYSTEM TAB
 	createSectionHeader(pageSystem, "INVENTORY SELL", 1)
 	createToggleRow(pageSystem, "Auto Sell Items", "rbxassetid://6034287514", "AutoSell", 2)
 	createToggleRow(pageSystem, "Sell Common items", "rbxassetid://6034287514", "SellCommon", 3)
@@ -1706,7 +1785,7 @@ local function createUltimateGUI()
 		end
 	end)
 
-	-- Touche F6 pour toggle l'autofarm (mouvement)
+	-- Touche F6 pour toggle l'autofarm
 	UserInputService.InputBegan:Connect(function(input, gameProcessed)
 		if gameProcessed then return end
 		if input.KeyCode == Enum.KeyCode.F6 then
@@ -1722,10 +1801,9 @@ local function createUltimateGUI()
 		end
 	end)
 
-	-- Démarrage du thread de fond permanent pour le combat et les fonctions
 	runBackgroundLoop()
 
-	print("GUI ULTIME V18 CHARGEE !")
+	print("GUI ULTIME V19 CHARGEE !")
 end
 
 -- ============================================================
