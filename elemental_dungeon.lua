@@ -1204,7 +1204,7 @@ local function createUltimateGUI()
 		track.Position = UDim2.new(0.42, 0, 0.5, -4)
 		track.BackgroundColor3 = colorSlateSidebar
 		track.BorderSizePixel = 0
-		track.Parent = track
+		track.Parent = frame
 
 		local trackCorner = Instance.new("UICorner")
 		trackCorner.CornerRadius = UDim.new(0, 4)
