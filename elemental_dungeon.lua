@@ -474,6 +474,9 @@ local function autoDetectTools()
 	return weapon, element
 end
 
+local lastEquipTime = 0
+local lastEquippedTarget = ""
+
 function autoEquipSpecific(toolName, isElement)
 	if not CONFIG.AutoEquip then return end
 	
@@ -491,6 +494,12 @@ function autoEquipSpecific(toolName, isElement)
 
 	local equippedTool = character:FindFirstChildOfClass("Tool")
 	if equippedTool and equippedTool.Name == targetName then
+		lastEquippedTarget = targetName
+		return
+	end
+
+	-- Debounce de 1.5s pour éviter le spam si l'outil cible est identique au dernier demandé
+	if lastEquippedTarget == targetName and (os.clock() - lastEquipTime) < 1.5 then
 		return
 	end
 
@@ -498,6 +507,9 @@ function autoEquipSpecific(toolName, isElement)
 	if backpack then
 		local tool = backpack:FindFirstChild(targetName)
 		if tool and tool:IsA("Tool") then
+			lastEquipTime = os.clock()
+			lastEquippedTarget = targetName
+			
 			humanoid:EquipTool(tool)
 			if UseWeapon then
 				pcall(function()
@@ -1846,7 +1858,7 @@ local function createUltimateGUI()
 
 	runBackgroundLoop()
 
-	print("GUI ULTIME V24 CHARGEE !")
+	print("GUI ULTIME V26 CHARGEE !")
 end
 
 -- ============================================================
