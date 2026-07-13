@@ -38,6 +38,7 @@ end
 
 -- 4. REMOTES
 local UseSword = WeaponService.RF and WeaponService.RF:FindFirstChild("UseSword")
+local UseWeapon = WeaponService.RF and WeaponService.RF:FindFirstChild("UseWeapon")
 local UseAbility = AttackService and AttackService.RF and AttackService.RF:FindFirstChild("UseAbility")
 local StartDungeon = DungeonService.RF and DungeonService.RF:FindFirstChild("StartDungeon")
 local VoteOn = PartyService and PartyService.RF and PartyService.RF:FindFirstChild("VoteOn")
@@ -160,8 +161,8 @@ local CONFIG = {
 
 	-- Équipement intelligent
 	EquipMode = "Both",
-	SelectedWeapon = "Aucun",
-	SelectedElement = "Aucun",
+	SelectedWeapon = "Auto-Detect",
+	SelectedElement = "Auto-Detect",
 
 	-- Combat Settings
 	SwingDelayMin = 0.08,
@@ -450,25 +451,60 @@ function collectDrop(drop)
 	end
 end
 
-function autoEquipSpecific(toolName)
+local function autoDetectTools()
+	local weapon = nil
+	local element = nil
+
+	local function scan(container)
+		if not container then return end
+		for _, item in ipairs(container:GetChildren()) do
+			if item:IsA("Tool") then
+				if item.Name == "Tool" then
+					element = "Tool"
+				else
+					weapon = item.Name
+				end
+			end
+		end
+	end
+
+	scan(LocalPlayer:FindFirstChild("Backpack"))
+	scan(LocalPlayer.Character)
+
+	return weapon, element
+end
+
+function autoEquipSpecific(toolName, isElement)
 	if not CONFIG.AutoEquip then return end
-	if not toolName or toolName == "Aucun" or toolName == "" then return end
+	
+	local targetName = toolName
+	if toolName == "Auto-Detect" then
+		local weapon, element = autoDetectTools()
+		targetName = isElement and element or weapon
+	end
+
+	if not targetName or targetName == "Aucun" or targetName == "" then return end
 	
 	local character = LocalPlayer.Character
 	local humanoid = character and character:FindFirstChild("Humanoid")
 	if not humanoid then return end
 
 	local equippedTool = character:FindFirstChildOfClass("Tool")
-	if equippedTool and equippedTool.Name == toolName then
+	if equippedTool and equippedTool.Name == targetName then
 		return
 	end
 
 	local backpack = LocalPlayer:FindFirstChild("Backpack")
 	if backpack then
-		local tool = backpack:FindFirstChild(toolName)
+		local tool = backpack:FindFirstChild(targetName)
 		if tool and tool:IsA("Tool") then
 			humanoid:EquipTool(tool)
-			task.wait(0.05)
+			if UseWeapon then
+				pcall(function()
+					UseWeapon:InvokeServer(tool)
+				end)
+			end
+			task.wait(0.08)
 		end
 	end
 end
@@ -580,7 +616,7 @@ local function runBackgroundLoop()
 							-- Alternance des cycles d'équipements pour éviter le blocage Roblox d'un seul tool actif
 							if combatCycle % 2 == 1 then
 								-- Tour Épée
-								autoEquipSpecific(CONFIG.SelectedWeapon)
+								autoEquipSpecific(CONFIG.SelectedWeapon, false)
 								if CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Sword Only" then
 									swing()
 								end
@@ -592,7 +628,7 @@ local function runBackgroundLoop()
 								end
 							else
 								-- Tour Sorts Élémentaires
-								autoEquipSpecific(CONFIG.SelectedElement)
+								autoEquipSpecific(CONFIG.SelectedElement, true)
 								if CONFIG.AutoSkillsElement and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
 									for _, slot in ipairs(CONFIG.SelectedSkillsElement) do
 										task.spawn(useSkill, slot)
@@ -602,7 +638,7 @@ local function runBackgroundLoop()
 						else
 							-- Équipements uniques standards
 							if mode == "Weapon Only" then
-								autoEquipSpecific(CONFIG.SelectedWeapon)
+								autoEquipSpecific(CONFIG.SelectedWeapon, false)
 								if CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Sword Only" then
 									swing()
 								end
@@ -612,7 +648,7 @@ local function runBackgroundLoop()
 									end
 								end
 							elseif mode == "Element Only" then
-								autoEquipSpecific(CONFIG.SelectedElement)
+								autoEquipSpecific(CONFIG.SelectedElement, true)
 								if CONFIG.AutoSkillsElement and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
 									for _, slot in ipairs(CONFIG.SelectedSkillsElement) do
 										task.spawn(useSkill, slot)
@@ -1110,6 +1146,9 @@ local function createUltimateGUI()
 		btn.Activated:Connect(function()
 			if label:find("Weapon") or label:find("Element") then
 				local updatedList = getAvailableTools()
+				if not table.find(updatedList, "Auto-Detect") then
+					table.insert(updatedList, 1, "Auto-Detect")
+				end
 				rebuildDropdownItems(updatedList)
 			end
 
@@ -1443,6 +1482,9 @@ local function createUltimateGUI()
 	end)
 
 	local toolsList = getAvailableTools()
+	if not table.find(toolsList, "Auto-Detect") then
+		table.insert(toolsList, 1, "Auto-Detect")
+	end
 	createDropdownRow(pageCombat, "Main Weapon :", "rbxassetid://6035043132", CONFIG.SelectedWeapon, toolsList, 7, function(newVal)
 		CONFIG.SelectedWeapon = newVal
 	end)
