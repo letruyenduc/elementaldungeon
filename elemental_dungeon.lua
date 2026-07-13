@@ -1,6 +1,6 @@
 -- ======================================================
--- AUTOFARM ULTIME – VERSION GUI V12 (EMERALD CLAYMORPHISM)
--- Onglets, Icônes Vectorielles, Vrais Dropdowns Dépliants, et plus !
+-- AUTOFARM ULTIME – VERSION GUI V13 (CLAYMORPHISM PRO)
+-- Onglets, Icônes Vectorielles, Slider, Dropdowns Dépliants, Anti-Chute
 -- ======================================================
 
 repeat
@@ -32,7 +32,7 @@ local HealingService = Services:FindFirstChild("HealingService")
 local AFKService = Services:FindFirstChild("AFKService")
 
 if not WeaponService or not DungeonService then
-	print("❌ Services non trouvés !")
+	print("Services non trouves !")
 	return
 end
 
@@ -46,7 +46,7 @@ local UseHeal = HealingService and HealingService.RF and HealingService.RF:FindF
 local Sell = InventoryService and InventoryService.RF and InventoryService.RF:FindFirstChild("Sell")
 
 if not UseSword or not StartDungeon then
-	print("❌ Remotes critiques non trouvés !")
+	print("Remotes critiques non trouves !")
 	return
 end
 
@@ -183,17 +183,32 @@ local STATS = {
 
 local isTweening = false
 local monitoredMobs = {}
+local activeTarget = nil -- Cible de combat active pour verrouiller la position
 
+-- Noclip permanent / temporaire & Ancrage de position (Anti-chute gravitationnelle)
 RunService.Stepped:Connect(function()
-	if (isTweening or CONFIG.NoclipPermanent) and LocalPlayer.Character then
-		for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+	local character = LocalPlayer.Character
+	local hrp = character and character:FindFirstChild("HumanoidRootPart")
+
+	if (isTweening or CONFIG.NoclipPermanent or (CONFIG.AutoFarm and activeTarget)) and character then
+		for _, part in ipairs(character:GetDescendants()) do
 			if part:IsA("BasePart") and part.CanCollide then
 				part.CanCollide = false
 			end
 		end
 	end
+
+	-- Forcer la position à l'offset configuré par rapport au monstre pour empêcher la chute
+	if CONFIG.AutoFarm and activeTarget and activeTarget.Parent and hrp and not isTweening then
+		local mobPart = activeTarget:FindFirstChild("HumanoidRootPart") or activeTarget:FindFirstChild("PrimaryPart")
+		if mobPart then
+			local targetPos = getPositionOffset(mobPart)
+			hrp.CFrame = CFrame.new(targetPos)
+		end
+	end
 end)
 
+-- Physique modifiée
 task.spawn(function()
 	while true do
 		task.wait(1)
@@ -288,7 +303,6 @@ function getAliveMobs()
 	return mobs
 end
 
-local currentTarget = nil
 function getClosestMob()
 	if currentTarget and currentTarget.Parent and currentTarget:FindFirstChild("Humanoid") and currentTarget.Humanoid.Health > 0 then
 		local character = LocalPlayer.Character
@@ -305,6 +319,7 @@ function getClosestMob()
 	local mobs = getAliveMobs()
 	if #mobs == 0 then
 		currentTarget = nil
+		activeTarget = nil
 		return nil
 	end
 
@@ -312,6 +327,7 @@ function getClosestMob()
 	local hrp = character and character:FindFirstChild("HumanoidRootPart")
 	if not hrp then
 		currentTarget = mobs[1]
+		activeTarget = currentTarget
 		return currentTarget
 	end
 
@@ -329,6 +345,7 @@ function getClosestMob()
 	end
 	
 	currentTarget = closest or mobs[1]
+	activeTarget = currentTarget
 	
 	-- Incrémentation de kills fiable
 	if currentTarget and not monitoredMobs[currentTarget] then
@@ -338,10 +355,12 @@ function getClosestMob()
 			humanoid.Died:Connect(function()
 				STATS.Kills = STATS.Kills + 1
 				monitoredMobs[currentTarget] = nil
+				if activeTarget == currentTarget then activeTarget = nil end
 			end)
 		end
 		currentTarget.Destroying:Connect(function()
 			monitoredMobs[currentTarget] = nil
+			if activeTarget == currentTarget then activeTarget = nil end
 		end)
 	end
 
@@ -478,6 +497,7 @@ local loopThread = nil
 
 function stopFarm()
 	isRunning = false
+	activeTarget = nil
 	if loopThread then
 		task.cancel(loopThread)
 		loopThread = nil
@@ -541,6 +561,8 @@ function startFarm()
 							end
 						end
 					end
+				else
+					activeTarget = nil
 				end
 			end
 
@@ -557,6 +579,7 @@ function startFarm()
 			if CONFIG.AutoRetry and loopCounter % 12 == 0 then
 				local mobs = getAliveMobs()
 				if #mobs == 0 then
+					activeTarget = nil
 					retry()
 					task.wait(1.5)
 					if #getAliveMobs() == 0 and CONFIG.AutoJoinDungeon then
@@ -575,7 +598,7 @@ function startFarm()
 end
 
 -- ============================================================
--- 11. CRÉATION DE L'INTERFACE EN EMERALD & MINT CLAYMORPHISM
+-- 11. CRÉATION DE L'INTERFACE EN EMERALD CLAYMORPHISM PRO (NO EMOJIS)
 -- ============================================================
 
 local function animateColor(guiObject, property, targetColor, duration)
@@ -605,7 +628,7 @@ local function createUltimateGUI()
 	local colorCoralWarning = Color3.fromRGB(240, 75, 110)    -- Rose Corail (complémentaire)
 	local colorTextLight = Color3.fromRGB(230, 245, 235)      -- Texte clair doux
 
-	-- Frame principal (Emerald Claymorphism)
+	-- Frame principal (Emerald Claymorphism PRO)
 	local mainFrame = Instance.new("Frame")
 	mainFrame.Size = UDim2.new(0, defaultWidth, 0, defaultHeight)
 	mainFrame.Position = UDim2.new(0.5, -defaultWidth/2, 0.5, -defaultHeight/2)
@@ -624,7 +647,7 @@ local function createUltimateGUI()
 	border.Parent = mainFrame
 
 	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 20)
+	corner.CornerRadius = UDim.new(0, 24) -- Coins plus prononcés
 	corner.Parent = mainFrame
 
 	-- Barre de titre
@@ -635,7 +658,7 @@ local function createUltimateGUI()
 	titleBar.Parent = mainFrame
 
 	local titleCorner = Instance.new("UICorner")
-	titleCorner.CornerRadius = UDim.new(0, 20)
+	titleCorner.CornerRadius = UDim.new(0, 24)
 	titleCorner.Parent = titleBar
 
 	local titleHideBottom = Instance.new("Frame")
@@ -649,7 +672,7 @@ local function createUltimateGUI()
 	titleText.Size = UDim2.new(0.65, 0, 1, 0)
 	titleText.Position = UDim2.new(0, 16, 0, 0)
 	titleText.BackgroundTransparency = 1
-	titleText.Text = "★ ELEMENTAL FARMER V12"
+	titleText.Text = "ELEMENTAL FARMER V13 PRO"
 	titleText.TextColor3 = colorTextLight
 	titleText.TextSize = 13
 	titleText.Font = Enum.Font.GothamBold
@@ -725,7 +748,7 @@ local function createUltimateGUI()
 		screenGui:Destroy()
 	end)
 
-	-- Bar d'onglets (Navigation Bar)
+	-- Bar d'onglets
 	tabBar.Size = UDim2.new(1, 0, 0, 36)
 	tabBar.Position = UDim2.new(0, 0, 0, 45)
 	tabBar.BackgroundColor3 = Color3.fromRGB(10, 22, 17)
@@ -804,13 +827,13 @@ local function createUltimateGUI()
 		end
 	end
 
-	-- Créateur de boutons d'onglets (avec ImageLabel pour remplacer les emojis)
+	-- Boutons d'onglets (avec ImageLabel - NO EMOJIS)
 	local function createTabButton(name, iconId, text, layoutOrder)
 		local btn = Instance.new("TextButton")
 		btn.Size = UDim2.new(0.2, 0, 1, 0)
 		btn.BackgroundColor3 = Color3.fromRGB(10, 22, 17)
 		btn.BorderSizePixel = 0
-		btn.Text = "" -- Texte géré par un TextLabel séparé
+		btn.Text = ""
 		btn.LayoutOrder = layoutOrder
 		btn.Parent = tabBar
 
@@ -846,10 +869,10 @@ local function createUltimateGUI()
 	createTabButton("Combat", "rbxassetid://6035043132", "Combat", 2)
 	createTabButton("TP", "rbxassetid://6034855071", "Parcours", 3)
 	createTabButton("Dungeon", "rbxassetid://6034287517", "Donjon", 4)
-	createTabButton("System", "rbxassetid://6031289116", "Système", 5)
+	createTabButton("System", "rbxassetid://6031289116", "Systeme", 5)
 
 	-- ============================================
-	-- CONTRÔLES STYLISÉS CLAYMORPHISM (PUFFY VERT)
+	-- CONTRÔLES STYLISÉS CLAYMORPHISM (PRO - NO EMOJIS)
 	-- ============================================
 	local function createToggleRow(parent, label, iconId, configKey, layoutOrder)
 		local frame = Instance.new("Frame")
@@ -915,7 +938,7 @@ local function createUltimateGUI()
 		return frame
 	end
 
-	-- VRAI DROPDOWN COMPONENT (DÉPLIANT & INTERACTIF)
+	-- DROPDOWN DEPLIANT INTERACTIF
 	local function createDropdownRow(parent, label, iconId, initialValue, options, layoutOrder, callback)
 		local isOpened = false
 		local itemHeight = 26
@@ -978,7 +1001,6 @@ local function createUltimateGUI()
 		gradient.Parent = btn
 		btn.Parent = topRow
 
-		-- Conteneur d'options de dropdown dépliant
 		local optionsListFrame = Instance.new("Frame")
 		optionsListFrame.Size = UDim2.new(0.5, 0, 0, 0)
 		optionsListFrame.Position = UDim2.new(0.5, 0, 0, dropdownRowHeight)
@@ -1029,7 +1051,6 @@ local function createUltimateGUI()
 				optBtn.MouseButton1Click:Connect(function()
 					btn.Text = tostring(option) .. "  ▼"
 					callback(option)
-					-- Replier
 					isOpened = false
 					optionsListFrame.Visible = false
 					frame:TweenSize(UDim2.new(1, 0, 0, dropdownRowHeight), "Out", "Quad", 0.15, true)
@@ -1042,8 +1063,7 @@ local function createUltimateGUI()
 		rebuildDropdownItems(options)
 
 		btn.MouseButton1Click:Connect(function()
-			-- Mise à jour dynamique pour les armes/éléments détectés en temps réel
-			if label:find("Arme") or label:find("Élément") then
+			if label:find("Arme") or label:find("Element") then
 				local updatedList = getAvailableTools()
 				rebuildDropdownItems(updatedList)
 			end
@@ -1057,6 +1077,142 @@ local function createUltimateGUI()
 			else
 				optionsListFrame.Visible = false
 				frame:TweenSize(UDim2.new(1, 0, 0, dropdownRowHeight), "Out", "Quad", 0.15, true)
+			end
+		end)
+
+		frame.Parent = parent
+		return frame
+	end
+
+	-- SLIDER AVEC TEXTBOX INTEGRÉE POUR LA DISTANCE
+	local function createSliderRow(parent, label, iconId, initialValue, min, max, layoutOrder, callback)
+		local frame = Instance.new("Frame")
+		frame.Size = UDim2.new(1, 0, 0, 36)
+		frame.BackgroundTransparency = 1
+		frame.LayoutOrder = layoutOrder
+
+		local icon = Instance.new("ImageLabel")
+		icon.Size = UDim2.new(0, 14, 0, 14)
+		icon.Position = UDim2.new(0, 4, 0.5, -7)
+		icon.BackgroundTransparency = 1
+		icon.Image = iconId
+		icon.ImageColor3 = colorMintActive
+		icon.Parent = frame
+
+		local lbl = Instance.new("TextLabel")
+		lbl.Size = UDim2.new(0.35, 0, 1, 0)
+		lbl.Position = UDim2.new(0, 24, 0, 0)
+		lbl.BackgroundTransparency = 1
+		lbl.Text = label
+		lbl.TextColor3 = Color3.fromRGB(200, 220, 210)
+		lbl.TextSize = 11
+		lbl.TextXAlignment = Enum.TextXAlignment.Left
+		lbl.Font = Enum.Font.Gotham
+		lbl.Parent = frame
+
+		-- Track
+		local track = Instance.new("Frame")
+		track.Size = UDim2.new(0.32, 0, 0, 6)
+		track.Position = UDim2.new(0.42, 0, 0.5, -3)
+		track.BackgroundColor3 = Color3.fromRGB(20, 40, 32)
+		track.BorderSizePixel = 0
+		track.Parent = frame
+
+		local trackCorner = Instance.new("UICorner")
+		trackCorner.CornerRadius = UDim.new(0, 3)
+		trackCorner.Parent = track
+
+		-- Fill
+		local fill = Instance.new("Frame")
+		fill.Size = UDim2.new((initialValue - min) / (max - min), 0, 1, 0)
+		fill.BackgroundColor3 = colorMintActive
+		fill.BorderSizePixel = 0
+		fill.Parent = track
+
+		local fillCorner = Instance.new("UICorner")
+		fillCorner.CornerRadius = UDim.new(0, 3)
+		fillCorner.Parent = fill
+
+		-- Thumb
+		local thumb = Instance.new("TextButton")
+		thumb.Size = UDim2.new(0, 14, 0, 14)
+		thumb.Position = UDim2.new((initialValue - min) / (max - min), -7, 0.5, -7)
+		thumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		thumb.Text = ""
+		thumb.Parent = track
+
+		local thumbCorner = Instance.new("UICorner")
+		thumbCorner.CornerRadius = UDim.new(1, 0)
+		thumbCorner.Parent = thumb
+
+		local thumbStroke = Instance.new("UIStroke")
+		thumbStroke.Thickness = 2
+		thumbStroke.Color = colorMintActive
+		thumbStroke.Parent = thumb
+
+		-- TextBox
+		local box = Instance.new("TextBox")
+		box.Size = UDim2.new(0.18, 0, 0, 26)
+		box.Position = UDim2.new(0.8, 0, 0.5, -13)
+		box.BackgroundColor3 = Color3.fromRGB(15, 34, 26)
+		box.Text = tostring(initialValue)
+		box.TextColor3 = Color3.fromRGB(255, 255, 255)
+		box.TextSize = 11
+		box.Font = Enum.Font.Gotham
+		
+		local boxCorner = Instance.new("UICorner")
+		boxCorner.CornerRadius = UDim.new(0, 6)
+		boxCorner.Parent = box
+
+		local boxStroke = Instance.new("UIStroke")
+		boxStroke.Thickness = 2
+		boxStroke.Color = colorEmeraldBorder
+		boxStroke.Parent = box
+		box.Parent = frame
+
+		-- Drag Logic
+		local dragging = false
+
+		local function updateValue(percentage)
+			percentage = math.clamp(percentage, 0, 1)
+			local rawVal = min + (max - min) * percentage
+			local val = math.floor(rawVal * 10 + 0.5) / 10
+			fill.Size = UDim2.new(percentage, 0, 1, 0)
+			thumb.Position = UDim2.new(percentage, -7, 0.5, -7)
+			box.Text = tostring(val)
+			callback(val)
+		end
+
+		thumb.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				dragging = true
+			end
+		end)
+
+		UserInputService.InputEnded:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				dragging = false
+			end
+		end)
+
+		UserInputService.InputChanged:Connect(function(input)
+			if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+				local absolutePosition = track.AbsolutePosition
+				local absoluteSize = track.AbsoluteSize
+				local mouseX = input.Position.X
+				local percentage = (mouseX - absolutePosition.X) / absoluteSize.X
+				updateValue(percentage)
+			end
+		end)
+
+		box.FocusLost:Connect(function()
+			local val = tonumber(box.Text)
+			if val then
+				val = math.clamp(val, min, max)
+				local percentage = (val - min) / (max - min)
+				updateValue(percentage)
+			else
+				box.Text = tostring(CONFIG.TP_Distance)
 			end
 		end)
 
@@ -1130,7 +1286,7 @@ local function createUltimateGUI()
 	end
 
 	-- ============================================
-	-- ONGLET 1 : STATUS
+	-- ONGLET 1 : STATUS (STATS & MODULES RAPIDES)
 	-- ============================================
 	local mainToggleBtn = Instance.new("TextButton")
 	mainToggleBtn.Size = UDim2.new(1, 0, 0, 45)
@@ -1200,7 +1356,7 @@ local function createUltimateGUI()
 	statusStatsLabel.Size = UDim2.new(1, -20, 1, -20)
 	statusStatsLabel.Position = UDim2.new(0, 10, 0, 10)
 	statusStatsLabel.BackgroundTransparency = 1
-	statusStatsLabel.Text = "💀 Kills : 0\n🏰 Donjons relancés : 0\n⏱ Temps de session : 00:00\n📦 Butins : 0 | 💰 Ventes : 0"
+	statusStatsLabel.Text = "Kills : 0\nDonjons relances : 0\nTemps de session : 00:00\nButins : 0 | Ventes : 0"
 	statusStatsLabel.TextColor3 = colorTextLight
 	statusStatsLabel.TextSize = 12
 	statusStatsLabel.LineHeight = 1.35
@@ -1211,46 +1367,46 @@ local function createUltimateGUI()
 	statusStatsFrame.Parent = pageStatus
 
 	createSectionHeader(pageStatus, "AUTOMATISATIONS RAPIDES", 3)
-	createToggleRow(pageStatus, "🤖 Auto Attaquer les Monstres", "rbxassetid://6035043132", "AutoAttack", 4)
-	createToggleRow(pageStatus, "🪙 Auto Collecter le Butin", "rbxassetid://6034287523", "AutoCollect", 5)
-	createToggleRow(pageStatus, "❤️ Auto Soin (Heal)", "rbxassetid://6034287517", "AutoHeal", 6)
-	createToggleRow(pageStatus, "🛍️ Auto Vendre l'Inventaire", "rbxassetid://6034287514", "AutoSell", 7)
-	createToggleRow(pageStatus, "🔄 Auto Relancer le Donjon", "rbxassetid://6031768426", "AutoRetry", 8)
-	createToggleRow(pageStatus, "🚪 Auto Rejoindre en Donjon", "rbxassetid://6034855071", "AutoJoinDungeon", 9)
+	createToggleRow(pageStatus, "Auto Attaquer les Monstres", "rbxassetid://6035043132", "AutoAttack", 4)
+	createToggleRow(pageStatus, "Auto Collecter le Butin", "rbxassetid://6034287523", "AutoCollect", 5)
+	createToggleRow(pageStatus, "Auto Soin", "rbxassetid://6034287517", "AutoHeal", 6)
+	createToggleRow(pageStatus, "Auto Vendre l'Inventaire", "rbxassetid://6034287514", "AutoSell", 7)
+	createToggleRow(pageStatus, "Auto Relancer le Donjon", "rbxassetid://6031768426", "AutoRetry", 8)
+	createToggleRow(pageStatus, "Auto Rejoindre en Donjon", "rbxassetid://6034855071", "AutoJoinDungeon", 9)
 
 	-- ============================================
-	-- ONGLET 2 : COMBAT (VRAIS DROPDOWNS)
+	-- ONGLET 2 : COMBAT
 	-- ============================================
-	createSectionHeader(pageCombat, "LOGIQUE D'ÉQUIPEMENT", 1)
-	createDropdownRow(pageCombat, "⚙️ Mode d'Équipement :", "rbxassetid://6031289116", CONFIG.EquipMode, {"Both", "Weapon Only", "Element Only", "None"}, 2, function(newVal)
+	createSectionHeader(pageCombat, "LOGIQUE D'EQUIPEMENT", 1)
+	createDropdownRow(pageCombat, "Mode d'Equipement :", "rbxassetid://6031289116", CONFIG.EquipMode, {"Both", "Weapon Only", "Element Only", "None"}, 2, function(newVal)
 		CONFIG.EquipMode = newVal
 	end)
 
 	local toolsList = getAvailableTools()
-	createDropdownRow(pageCombat, "⚔️ Arme Principale :", "rbxassetid://6035043132", CONFIG.SelectedWeapon, toolsList, 3, function(newVal)
+	createDropdownRow(pageCombat, "Arme Principale :", "rbxassetid://6035043132", CONFIG.SelectedWeapon, toolsList, 3, function(newVal)
 		CONFIG.SelectedWeapon = newVal
 	end)
 
-	createDropdownRow(pageCombat, "🔮 Outil Élément :", "rbxassetid://6034287517", CONFIG.SelectedElement, toolsList, 4, function(newVal)
+	createDropdownRow(pageCombat, "Outil Element :", "rbxassetid://6034287517", CONFIG.SelectedElement, toolsList, 4, function(newVal)
 		CONFIG.SelectedElement = newVal
 	end)
 
-	createSectionHeader(pageCombat, "PARAMÈTRES D'ATTAQUE", 5)
-	createDropdownRow(pageCombat, "🔥 Mode de Combat :", "rbxassetid://6035043132", CONFIG.AttackMode, {"Sword & Skills", "Sword Only", "Skills Only"}, 6, function(newVal)
+	createSectionHeader(pageCombat, "PARAMETRES D'ATTAQUE", 5)
+	createDropdownRow(pageCombat, "Mode de Combat :", "rbxassetid://6035043132", CONFIG.AttackMode, {"Sword & Skills", "Sword Only", "Skills Only"}, 6, function(newVal)
 		CONFIG.AttackMode = newVal
 	end)
 
-	createInputRow(pageCombat, "⏱️ Délai Attaque Min (s) :", "rbxassetid://6031768426", CONFIG.SwingDelayMin, 7, function(box, text)
+	createInputRow(pageCombat, "Delai Attaque Min (s) :", "rbxassetid://6031768426", CONFIG.SwingDelayMin, 7, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 0.01 and val <= 2 then CONFIG.SwingDelayMin = val else box.Text = tostring(CONFIG.SwingDelayMin) end
 	end)
 
-	createInputRow(pageCombat, "⏱️ Délai Attaque Max (s) :", "rbxassetid://6031768426", CONFIG.SwingDelayMax, 8, function(box, text)
+	createInputRow(pageCombat, "Delai Attaque Max (s) :", "rbxassetid://6031768426", CONFIG.SwingDelayMax, 8, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 0.01 and val <= 2 then CONFIG.SwingDelayMax = val else box.Text = tostring(CONFIG.SwingDelayMax) end
 	end)
 
-	createInputRow(pageCombat, "📏 Distance d'Attaque (studs) :", "rbxassetid://6034855071", CONFIG.MaxAttackDistance, 9, function(box, text)
+	createInputRow(pageCombat, "Distance d'Attaque (studs) :", "rbxassetid://6034855071", CONFIG.MaxAttackDistance, 9, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 1 and val <= 50 then CONFIG.MaxAttackDistance = val else box.Text = tostring(CONFIG.MaxAttackDistance) end
 	end)
@@ -1334,7 +1490,7 @@ local function createUltimateGUI()
 	end
 	createSkillsRow(pageCombat, 11)
 
-	createInputRow(pageCombat, "⏱️ Délai entre sorts (s) :", "rbxassetid://6031768426", CONFIG.SkillDelay, 12, function(box, text)
+	createInputRow(pageCombat, "Delai entre sorts (s) :", "rbxassetid://6031768426", CONFIG.SkillDelay, 12, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 0 and val <= 10 then CONFIG.SkillDelay = val else box.Text = tostring(CONFIG.SkillDelay) end
 	end)
@@ -1342,17 +1498,17 @@ local function createUltimateGUI()
 	-- ============================================
 	-- ONGLET 3 : PARCOURS & TELEPORTATION
 	-- ============================================
-	createSectionHeader(pageTP, "RÉGLAGES DES MOUVEMENTS", 1)
-	createDropdownRow(pageTP, "📍 Position relative :", "rbxassetid://6034855071", CONFIG.TP_Position, {"Top", "Bottom", "Behind", "Front", "Left", "Right"}, 2, function(newVal)
+	createSectionHeader(pageTP, "REGLAGES DES MOUVEMENTS", 1)
+	createDropdownRow(pageTP, "Position relative :", "rbxassetid://6034855071", CONFIG.TP_Position, {"Top", "Bottom", "Behind", "Front", "Left", "Right"}, 2, function(newVal)
 		CONFIG.TP_Position = newVal
 	end)
 
-	createInputRow(pageTP, "📏 Distance relative (studs) :", "rbxassetid://6034855071", CONFIG.TP_Distance, 3, function(box, text)
-		local val = tonumber(text)
-		if val and val >= -10 and val <= 25 then CONFIG.TP_Distance = val else box.Text = tostring(CONFIG.TP_Distance) end
+	-- SLIDER + TEXTBOX POUR LA DISTANCE RELATIVE
+	createSliderRow(pageTP, "Distance relative :", "rbxassetid://6034855071", CONFIG.TP_Distance, 0, 25, 3, function(newVal)
+		CONFIG.TP_Distance = newVal
 	end)
 
-	createInputRow(pageTP, "📐 Offset Manuel (X,Y,Z) :", "rbxassetid://6034855071", CONFIG.TP_Offset_X .. "," .. CONFIG.TP_Offset_Y .. "," .. CONFIG.TP_Offset_Z, 4, function(box, text)
+	createInputRow(pageTP, "Offset Manuel (X,Y,Z) :", "rbxassetid://6034855071", CONFIG.TP_Offset_X .. "," .. CONFIG.TP_Offset_Y .. "," .. CONFIG.TP_Offset_Z, 4, function(box, text)
 		local parts = {}
 		for part in text:gmatch("[^,]+") do table.insert(parts, tonumber(part)) end
 		if #parts == 3 then
@@ -1364,57 +1520,57 @@ local function createUltimateGUI()
 		end
 	end)
 
-	createInputRow(pageTP, "⚡ Vitesse de Tween (studs/s) :", "rbxassetid://6031768426", CONFIG.TweenSpeed, 5, function(box, text)
+	createInputRow(pageTP, "Vitesse de Tween (studs/s) :", "rbxassetid://6031768426", CONFIG.TweenSpeed, 5, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 10 and val <= 250 then CONFIG.TweenSpeed = val else box.Text = tostring(CONFIG.TweenSpeed) end
 	end)
 
-	createSectionHeader(pageTP, "SÉCURITÉ & DEPLACEMENT", 6)
-	createToggleRow(pageTP, "🎲 Activer Déplacement Aléatoire", "rbxassetid://6031768426", "RandomizeOffset", 7)
-	createInputRow(pageTP, "🎲 Marge Aléatoire (studs) :", "rbxassetid://6031768426", CONFIG.RandomOffsetRange, 8, function(box, text)
+	createSectionHeader(pageTP, "SECURITE & MOUVEMENTS", 6)
+	createToggleRow(pageTP, "Activer Deplacement Aleatoire", "rbxassetid://6031768426", "RandomizeOffset", 7)
+	createInputRow(pageTP, "Marge Aleatoire (studs) :", "rbxassetid://6031768426", CONFIG.RandomOffsetRange, 8, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 0.1 and val <= 10 then CONFIG.RandomOffsetRange = val else box.Text = tostring(CONFIG.RandomOffsetRange) end
 	end)
 
-	createToggleRow(pageTP, "👻 Mode Noclip Permanent", "rbxassetid://6034855071", "NoclipPermanent", 9)
+	createToggleRow(pageTP, "Mode Noclip Permanent", "rbxassetid://6034855071", "NoclipPermanent", 9)
 
 	-- ============================================
 	-- ONGLET 4 : DONJON & VENTE
 	-- ============================================
 	createSectionHeader(pageDungeon, "LANCEMENT DE DONJONS", 1)
-	createDropdownRow(pageDungeon, "🏰 Nom du Donjon :", "rbxassetid://6034287517", CONFIG.DungeonName, DUNGEONS_LIST, 2, function(newVal)
+	createDropdownRow(pageDungeon, "Nom du Donjon :", "rbxassetid://6034287517", CONFIG.DungeonName, DUNGEONS_LIST, 2, function(newVal)
 		CONFIG.DungeonName = newVal
 	end)
 
-	createDropdownRow(pageDungeon, "🔥 Difficulté :", "rbxassetid://6034287517", CONFIG.Difficulty, DIFFICULTIES_LIST, 3, function(newVal)
+	createDropdownRow(pageDungeon, "Difficulte :", "rbxassetid://6034287517", CONFIG.Difficulty, DIFFICULTIES_LIST, 3, function(newVal)
 		CONFIG.Difficulty = newVal
 	end)
 
-	createInputRow(pageDungeon, "⏱️ Délai de Relancement (s) :", "rbxassetid://6031768426", CONFIG.RetryDelay, 4, function(box, text)
+	createInputRow(pageDungeon, "Delai de Relancement (s) :", "rbxassetid://6031768426", CONFIG.RetryDelay, 4, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 0 and val <= 15 then CONFIG.RetryDelay = val else box.Text = tostring(CONFIG.RetryDelay) end
 	end)
 
-	createInputRow(pageDungeon, "💚 Seuil auto-soin (vie %) :", "rbxassetid://6034287517", math.floor(CONFIG.HealThreshold * 100), 5, function(box, text)
+	createInputRow(pageDungeon, "Seuil auto-soin (vie %) :", "rbxassetid://6034287517", math.floor(CONFIG.HealThreshold * 100), 5, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 5 and val <= 100 then CONFIG.HealThreshold = val / 100 else box.Text = tostring(math.floor(CONFIG.HealThreshold * 100)) end
 	end)
 
 	createSectionHeader(pageDungeon, "AUTO-VENTE D'INVENTAIRE", 6)
-	createToggleRow(pageDungeon, "🟢 Vendre objets COMMUNS (Common)", "rbxassetid://6034287514", "SellCommon", 7)
-	createToggleRow(pageDungeon, "🔵 Vendre objets PEU COMMUNS (Uncommon)", "rbxassetid://6034287514", "SellUncommon", 8)
-	createToggleRow(pageDungeon, "🟣 Vendre objets RARES (Rare)", "rbxassetid://6034287514", "SellRare", 9)
+	createToggleRow(pageDungeon, "Vendre objets COMMUNS", "rbxassetid://6034287514", "SellCommon", 7)
+	createToggleRow(pageDungeon, "Vendre objets PEU COMMUNS", "rbxassetid://6034287514", "SellUncommon", 8)
+	createToggleRow(pageDungeon, "Vendre objets RARES", "rbxassetid://6034287514", "SellRare", 9)
 
 	-- ============================================
 	-- ONGLET 5 : SYSTEME
 	-- ============================================
-	createSectionHeader(pageSystem, "PROPRIÉTÉS PHYSIQUES", 1)
-	createInputRow(pageSystem, "⚡ Vitesse de marche (WS) :", "rbxassetid://6031768426", CONFIG.WalkSpeed, 2, function(box, text)
+	createSectionHeader(pageSystem, "PROPRIETES PHYSIQUES", 1)
+	createInputRow(pageSystem, "Vitesse de marche (WS) :", "rbxassetid://6031768426", CONFIG.WalkSpeed, 2, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 16 and val <= 150 then CONFIG.WalkSpeed = val else box.Text = tostring(CONFIG.WalkSpeed) end
 	end)
 
-	createInputRow(pageSystem, "🚀 Puissance de Saut (JP) :", "rbxassetid://6031768426", CONFIG.JumpPower, 3, function(box, text)
+	createInputRow(pageSystem, "Puissance de Saut (JP) :", "rbxassetid://6031768426", CONFIG.JumpPower, 3, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 50 and val <= 250 then CONFIG.JumpPower = val else box.Text = tostring(CONFIG.JumpPower) end
 	end)
@@ -1458,7 +1614,7 @@ local function createUltimateGUI()
 	optiLbl.Size = UDim2.new(1, -34, 1, 0)
 	optiLbl.Position = UDim2.new(0, 34, 0, 0)
 	optiLbl.BackgroundTransparency = 1
-	optiLbl.Text = "🌙 Mode nuit (Désactiver Rendu 3D)"
+	optiLbl.Text = "Mode nuit (Desactiver Rendu 3D)"
 	optiLbl.TextColor3 = colorTextLight
 	optiLbl.TextSize = 11
 	optiLbl.TextXAlignment = Enum.TextXAlignment.Left
@@ -1525,15 +1681,15 @@ local function createUltimateGUI()
 			local seconds = elapsed % 60
 			local timeStr = string.format("%02d:%02d", minutes, seconds)
 
-			local fullStatsText = "💀 Kills : "
+			local fullStatsText = "Kills : "
 				.. STATS.Kills
-				.. "\n🏰 Donjons relancés : "
+				.. "\nDonjons relances : "
 				.. STATS.Dungeons
-				.. "\n⏱ Temps de session : "
+				.. "\nTemps de session : "
 				.. timeStr
-				.. "\n📦 Butins : "
+				.. "\nButins : "
 				.. STATS.LootCollected
-				.. " | 💰 Ventes : "
+				.. " | Ventes : "
 				.. STATS.ItemsSold
 
 			statusStatsLabel.Text = fullStatsText
@@ -1559,7 +1715,7 @@ local function createUltimateGUI()
 		end
 	end)
 
-	print("✅ GUI ULTIME V12 CLAYMORPHISM CHARGÉE !")
+	print("GUI ULTIME V13 CLAYMORPHISM CHARGEE !")
 end
 
 -- ============================================================
