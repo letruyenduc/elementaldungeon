@@ -1,6 +1,6 @@
 -- ======================================================
--- AUTOFARM ULTIME – VERSION GUI V16 (TABBED GAME THEMED)
--- Style officiel "Dungeon Creator" - Format Paysage, FredokaOne, Titre "Elemental Dungeon", Tout en Anglais
+-- AUTOFARM ULTIME – VERSION GUI V17 (ORGANIZED TABBED GAME THEMED)
+-- Style officiel "Dungeon Creator" - Tout Désactivé par défaut, Difficultés Dynamiques, Onglets Réorganisés
 -- ======================================================
 
 repeat
@@ -51,7 +51,7 @@ if not UseSword or not StartDungeon then
 end
 
 -- ============================================================
--- 5. SCAN DES DONJONS ET DIFFICULTÉS
+-- 5. SCAN DYNAMIQUE DES DONJONS ET DIFFICULTÉS
 -- ============================================================
 
 local function scanDungeons()
@@ -80,8 +80,42 @@ local function scanDungeons()
 	return list
 end
 
+local function scanDifficulties()
+	local list = {}
+	pcall(function()
+		local sharedModules = ReplicatedStorage.ReplicatedStorage.SharedModules
+		local dungeonsFolder = sharedModules and sharedModules:FindFirstChild("Dungeons")
+		local dungeonsData = dungeonsFolder and dungeonsFolder:FindFirstChild("DungeonsData")
+		if dungeonsData then
+			for _, child in ipairs(dungeonsData:GetChildren()) do
+				if child:IsA("ModuleScript") then
+					local module = require(child)
+					if module and module.Difficulties then
+						for diff, _ in pairs(module.Difficulties) do
+							if not table.find(list, diff) then
+								table.insert(list, diff)
+							end
+						end
+					elseif module and module.Rewards then
+						for diff, _ in pairs(module.Rewards) do
+							if not table.find(list, diff) then
+								table.insert(list, diff)
+							end
+						end
+					end
+				end
+			end
+		end
+	end)
+	if #list == 0 then
+		list = { "Easy", "Medium", "Hard", "Hell" }
+	end
+	table.sort(list)
+	return list
+end
+
 local DUNGEONS_LIST = scanDungeons()
-local DIFFICULTIES_LIST = { "Easy", "Medium", "Hard", "Hell" }
+local DIFFICULTIES_LIST = scanDifficulties()
 
 -- ============================================================
 -- 6. SCAN DES ARMES ET COMPÉTENCES
@@ -109,19 +143,19 @@ function getAvailableTools()
 end
 
 -- ============================================================
--- 7. CONFIGURATION HAUTEMENT PERSONNALISABLE
+-- 7. CONFIGURATION HAUTEMENT PERSONNALISABLE (DESACTIVÉE PAR DÉFAUT)
 -- ============================================================
 
 local CONFIG = {
 	AutoFarm = false,
-	AutoAttack = true,
-	AutoHeal = true,
-	AutoCollect = true,
-	AutoEquip = true,
-	AutoSkills = true,
-	AutoSell = true,
-	AutoRetry = true,
-	AutoJoinDungeon = true,
+	AutoAttack = false,
+	AutoHeal = false,
+	AutoCollect = false,
+	AutoEquip = false,
+	AutoSkills = false,
+	AutoSell = false,
+	AutoRetry = false,
+	AutoJoinDungeon = false,
 
 	-- Équipement intelligent
 	EquipMode = "Both",
@@ -149,14 +183,14 @@ local CONFIG = {
 
 	-- Dungeon
 	DungeonName = DUNGEONS_LIST[1] or "Beginners",
-	Difficulty = "Easy",
+	Difficulty = DIFFICULTIES_LIST[1] or "Easy",
 	RetryDelay = 2.5,
 
 	-- Healing
 	HealThreshold = 0.3,
 	
 	-- AutoSell Rarities
-	SellCommon = true,
+	SellCommon = false,
 	SellUncommon = false,
 	SellRare = false,
 	
@@ -578,7 +612,7 @@ function startFarm()
 end
 
 -- ============================================================
--- 11. CRÉATION DE L'INTERFACE AU STYLE OFFICIEL DU JEU (V16)
+-- 11. CRÉATION DE L'INTERFACE AU STYLE OFFICIEL DU JEU (V17)
 -- ============================================================
 
 local function animateColor(guiObject, property, targetColor, duration)
@@ -1269,10 +1303,10 @@ local function createUltimateGUI()
 	end
 
 	-- ============================================
-	-- PAGES CONTENTS DEFINITIONS (RESTORED BY SECTIONS)
+	-- PAGES CONTENTS DEFINITIONS (REORGANIZED V17)
 	-- ============================================
 
-	-- 1. STATUS TAB
+	-- 1. STATUS TAB (STATS ONLY)
 	local mainToggleBtn = Instance.new("TextButton")
 	mainToggleBtn.Size = UDim2.new(1, 0, 0, 45)
 	mainToggleBtn.BackgroundColor3 = colorGreenActive
@@ -1354,47 +1388,49 @@ local function createUltimateGUI()
 	statusStatsLabel.Parent = statusStatsFrame
 	statusStatsFrame.Parent = pageStatus
 
-	createSectionHeader(pageStatus, "QUICK SETTINGS", 3)
-	createToggleRow(pageStatus, "Auto Attack Monsters", "rbxassetid://6035043132", "AutoAttack", 4)
-	createToggleRow(pageStatus, "Auto Collect Drops", "rbxassetid://6034287523", "AutoCollect", 5)
-	createToggleRow(pageStatus, "Auto Health Healing", "rbxassetid://6034287517", "AutoHeal", 6)
 
-	-- 2. COMBAT TAB (SECTIONS)
-	createSectionHeader(pageCombat, "GEAR SELECTION", 1)
-	createDropdownRow(pageCombat, "Equip Mode :", "rbxassetid://6031289116", CONFIG.EquipMode, {"Both", "Weapon Only", "Element Only", "None"}, 2, function(newVal)
+	-- 2. COMBAT TAB (ALL COMBAT RELATED TOGGLES & OPTIONS)
+	createSectionHeader(pageCombat, "COMBAT AUTOMATIONS", 1)
+	createToggleRow(pageCombat, "Auto Attack Monsters", "rbxassetid://6035043132", "AutoAttack", 2)
+	createToggleRow(pageCombat, "Auto Equip Gear", "rbxassetid://6035043132", "AutoEquip", 3)
+	createToggleRow(pageCombat, "Auto Cast Spells", "rbxassetid://6034287517", "AutoSkills", 4)
+	createToggleRow(pageCombat, "Auto Health Healing", "rbxassetid://6034287517", "AutoHeal", 5)
+
+	createSectionHeader(pageCombat, "GEAR SELECTION", 6)
+	createDropdownRow(pageCombat, "Equip Mode :", "rbxassetid://6031289116", CONFIG.EquipMode, {"Both", "Weapon Only", "Element Only", "None"}, 7, function(newVal)
 		CONFIG.EquipMode = newVal
 	end)
 
 	local toolsList = getAvailableTools()
-	createDropdownRow(pageCombat, "Main Weapon :", "rbxassetid://6035043132", CONFIG.SelectedWeapon, toolsList, 3, function(newVal)
+	createDropdownRow(pageCombat, "Main Weapon :", "rbxassetid://6035043132", CONFIG.SelectedWeapon, toolsList, 8, function(newVal)
 		CONFIG.SelectedWeapon = newVal
 	end)
 
-	createDropdownRow(pageCombat, "Magic Element :", "rbxassetid://6034287517", CONFIG.SelectedElement, toolsList, 4, function(newVal)
+	createDropdownRow(pageCombat, "Magic Element :", "rbxassetid://6034287517", CONFIG.SelectedElement, toolsList, 9, function(newVal)
 		CONFIG.SelectedElement = newVal
 	end)
 
-	createSectionHeader(pageCombat, "ATTACK LOGIC", 5)
-	createDropdownRow(pageCombat, "Attack Mode :", "rbxassetid://6035043132", CONFIG.AttackMode, {"Sword & Skills", "Sword Only", "Skills Only"}, 6, function(newVal)
+	createSectionHeader(pageCombat, "ATTACK PARAMETERS", 10)
+	createDropdownRow(pageCombat, "Attack Mode :", "rbxassetid://6035043132", CONFIG.AttackMode, {"Sword & Skills", "Sword Only", "Skills Only"}, 11, function(newVal)
 		CONFIG.AttackMode = newVal
 	end)
 
-	createInputRow(pageCombat, "Attack Delay Min (s) :", "rbxassetid://6031768426", CONFIG.SwingDelayMin, 7, function(box, text)
+	createInputRow(pageCombat, "Attack Delay Min (s) :", "rbxassetid://6031768426", CONFIG.SwingDelayMin, 12, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 0.01 and val <= 2 then CONFIG.SwingDelayMin = val else box.Text = tostring(CONFIG.SwingDelayMin) end
 	end)
 
-	createInputRow(pageCombat, "Attack Delay Max (s) :", "rbxassetid://6031768426", CONFIG.SwingDelayMax, 8, function(box, text)
+	createInputRow(pageCombat, "Attack Delay Max (s) :", "rbxassetid://6031768426", CONFIG.SwingDelayMax, 13, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 0.01 and val <= 2 then CONFIG.SwingDelayMax = val else box.Text = tostring(CONFIG.SwingDelayMax) end
 	end)
 
-	createInputRow(pageCombat, "Attack Range (studs) :", "rbxassetid://6034855071", CONFIG.MaxAttackDistance, 9, function(box, text)
+	createInputRow(pageCombat, "Attack Range (studs) :", "rbxassetid://6034855071", CONFIG.MaxAttackDistance, 14, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 1 and val <= 50 then CONFIG.MaxAttackDistance = val else box.Text = tostring(CONFIG.MaxAttackDistance) end
 	end)
 
-	createSectionHeader(pageCombat, "ACTIVE SPELL SKILLS", 10)
+	createSectionHeader(pageCombat, "ACTIVE SPELL SKILLS", 15)
 	
 	local function createSkillsRowCombat(parent, layoutOrder)
 		local frame = Instance.new("Frame")
@@ -1464,15 +1500,16 @@ local function createUltimateGUI()
 		frame.Parent = parent
 		return frame
 	end
-	createSkillsRowCombat(pageCombat, 11)
+	createSkillsRowCombat(pageCombat, 16)
 
-	createInputRow(pageCombat, "Spell Cast Delay (s) :", "rbxassetid://6031768426", CONFIG.SkillDelay, 12, function(box, text)
+	createInputRow(pageCombat, "Spell Cast Delay (s) :", "rbxassetid://6031768426", CONFIG.SkillDelay, 17, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 0 and val <= 10 then CONFIG.SkillDelay = val else box.Text = tostring(CONFIG.SkillDelay) end
 	end)
 
-	-- 3. MOVEMENT TAB (SECTIONS)
-	createSectionHeader(pageTP, "TWEENING & SAFETY", 1)
+
+	-- 3. MOVEMENT TAB
+	createSectionHeader(pageTP, "MOVEMENT CONTROLS", 1)
 	createDropdownRow(pageTP, "TP Position :", "rbxassetid://6034855071", CONFIG.TP_Position, {"Top", "Bottom", "Behind", "Front", "Left", "Right"}, 2, function(newVal)
 		CONFIG.TP_Position = newVal
 	end)
@@ -1498,26 +1535,28 @@ local function createUltimateGUI()
 		if val and val >= 10 and val <= 250 then CONFIG.TweenSpeed = val else box.Text = tostring(CONFIG.TweenSpeed) end
 	end)
 
-	createToggleRow(pageTP, "Randomize Movement", "rbxassetid://6031768426", "RandomizeOffset", 6)
-	createInputRow(pageTP, "Random Offset range :", "rbxassetid://6031768426", CONFIG.RandomOffsetRange, 7, function(box, text)
+	createSectionHeader(pageTP, "SAFETY", 6)
+	createToggleRow(pageTP, "Randomize Movement", "rbxassetid://6031768426", "RandomizeOffset", 7)
+	createInputRow(pageTP, "Random Offset range :", "rbxassetid://6031768426", CONFIG.RandomOffsetRange, 8, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 0.1 and val <= 10 then CONFIG.RandomOffsetRange = val else box.Text = tostring(CONFIG.RandomOffsetRange) end
 	end)
 
-	createToggleRow(pageTP, "Permanent Noclip", "rbxassetid://6034855071", "NoclipPermanent", 8)
+	createToggleRow(pageTP, "Permanent Noclip", "rbxassetid://6034855071", "NoclipPermanent", 9)
 
-	createSectionHeader(pageTP, "PHYSICAL SPEEDS", 9)
-	createInputRow(pageTP, "Walk Speed (WS) :", "rbxassetid://6031768426", CONFIG.WalkSpeed, 10, function(box, text)
+	createSectionHeader(pageTP, "PHYSICAL SPEEDS", 10)
+	createInputRow(pageTP, "Walk Speed (WS) :", "rbxassetid://6031768426", CONFIG.WalkSpeed, 11, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 16 and val <= 150 then CONFIG.WalkSpeed = val else box.Text = tostring(CONFIG.WalkSpeed) end
 	end)
 
-	createInputRow(pageTP, "Jump Power (JP) :", "rbxassetid://6031768426", CONFIG.JumpPower, 11, function(box, text)
+	createInputRow(pageTP, "Jump Power (JP) :", "rbxassetid://6031768426", CONFIG.JumpPower, 12, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 50 and val <= 250 then CONFIG.JumpPower = val else box.Text = tostring(CONFIG.JumpPower) end
 	end)
 
-	-- 4. DUNGEON TAB (SECTIONS)
+
+	-- 4. DUNGEON TAB (CONTAINS COLLECT DROPS & AUTO RETRY & LOBBY SETTINGS)
 	createSectionHeader(pageDungeon, "LOBBY SETTINGS", 1)
 	createDropdownRow(pageDungeon, "Dungeon Name :", "rbxassetid://6034287517", CONFIG.DungeonName, DUNGEONS_LIST, 2, function(newVal)
 		CONFIG.DungeonName = newVal
@@ -1535,28 +1574,30 @@ local function createUltimateGUI()
 		if val and val >= 0 and val <= 15 then CONFIG.RetryDelay = val else box.Text = tostring(CONFIG.RetryDelay) end
 	end)
 
-	createSectionHeader(pageDungeon, "HEALING SWITCH", 7)
-	createToggleRow(pageDungeon, "Auto Healing", "rbxassetid://6034287517", "AutoHeal", 8)
-	createInputRow(pageDungeon, "Heal Threshold (life %) :", "rbxassetid://6034287517", math.floor(CONFIG.HealThreshold * 100), 9, function(box, text)
+	createSectionHeader(pageDungeon, "HEALING CONFIG", 7)
+	createInputRow(pageDungeon, "Heal Threshold (life %) :", "rbxassetid://6034287517", math.floor(CONFIG.HealThreshold * 100), 8, function(box, text)
 		local val = tonumber(text)
 		if val and val >= 5 and val <= 100 then CONFIG.HealThreshold = val / 100 else box.Text = tostring(math.floor(CONFIG.HealThreshold * 100)) end
 	end)
 
-	-- 5. SYSTEM TAB (SECTIONS)
-	createSectionHeader(pageSystem, "INVENTORY LOOTS", 1)
-	createToggleRow(pageSystem, "Auto Collect Drops", "rbxassetid://6034287523", "AutoCollect", 2)
-	createToggleRow(pageSystem, "Auto Sell Items", "rbxassetid://6034287514", "AutoSell", 3)
-	createToggleRow(pageSystem, "Sell Common items", "rbxassetid://6034287514", "SellCommon", 4)
-	createToggleRow(pageSystem, "Sell Uncommon items", "rbxassetid://6034287514", "SellUncommon", 5)
-	createToggleRow(pageSystem, "Sell Rare items", "rbxassetid://6034287514", "SellRare", 6)
+	createSectionHeader(pageDungeon, "LOOT COLLECT", 9)
+	createToggleRow(pageDungeon, "Auto Collect Drops", "rbxassetid://6034287523", "AutoCollect", 10) -- Moved here!
 
-	createSectionHeader(pageSystem, "SYSTEM OPTIMIZATION", 7)
+
+	-- 5. SYSTEM TAB (AUTO SELL & PERFORMANCE ONLY)
+	createSectionHeader(pageSystem, "INVENTORY SELL", 1)
+	createToggleRow(pageSystem, "Auto Sell Items", "rbxassetid://6034287514", "AutoSell", 2)
+	createToggleRow(pageSystem, "Sell Common items", "rbxassetid://6034287514", "SellCommon", 3)
+	createToggleRow(pageSystem, "Sell Uncommon items", "rbxassetid://6034287514", "SellUncommon", 4)
+	createToggleRow(pageSystem, "Sell Rare items", "rbxassetid://6034287514", "SellRare", 5)
+
+	createSectionHeader(pageSystem, "SYSTEM OPTIMIZATION", 6)
 	
 	-- 3D Rendering (Clay style)
 	local optiFrame = Instance.new("Frame")
 	optiFrame.Size = UDim2.new(1, 0, 0, 34)
 	optiFrame.BackgroundTransparency = 1
-	optiFrame.LayoutOrder = 8
+	optiFrame.LayoutOrder = 7
 
 	local optiBtn = Instance.new("TextButton")
 	optiBtn.Size = UDim2.new(0, 18, 0, 18)
@@ -1656,7 +1697,7 @@ local function createUltimateGUI()
 		end
 	end)
 
-	print("GUI ULTIME V16 CHARGEE !")
+	print("GUI ULTIME V17 CHARGEE !")
 end
 
 -- ============================================================
