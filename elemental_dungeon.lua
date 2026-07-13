@@ -1,6 +1,6 @@
 -- ======================================================
--- AUTOFARM ULTIME – VERSION GUI V10 (TABBED MODERN UI)
--- Onglets, Icônes, Équipements intelligents, et plus !
+-- AUTOFARM ULTIME – VERSION GUI V11 (CLAYMORPHISM & WINDOWS STYLE)
+-- Onglets, Icônes, Équipements intelligents, Réduire/Agrandir/Fermer !
 -- ======================================================
 
 repeat
@@ -124,7 +124,7 @@ local CONFIG = {
 	AutoJoinDungeon = true,
 
 	-- Équipement intelligent
-	EquipMode = "Both", -- "Both", "Weapon Only", "Element Only", "None"
+	EquipMode = "Both",
 	SelectedWeapon = "Aucun",
 	SelectedElement = "Aucun",
 
@@ -577,7 +577,7 @@ function startFarm()
 end
 
 -- ============================================================
--- 11. CRÉATION DE L'INTERFACE PREMIUM TAB-BASED AVEC ICÔNES
+-- 11. CRÉATION DE L'INTERFACE EN CLAYMORPHISM AVEC CONTRÔLES WINDOWS
 -- ============================================================
 
 local function animateColor(guiObject, property, targetColor, duration)
@@ -591,59 +591,142 @@ local function createUltimateGUI()
 	screenGui.ResetOnSpawn = false
 	screenGui.Parent = CoreGui
 
-	-- Frame principal (Glassmorphism & Neon cyan border)
+	-- Tailles par défaut
+	local defaultWidth = 440
+	local defaultHeight = 580
+	local minimizedHeight = 45
+	local maximizedHeight = 720
+	local isWindowMaximized = false
+	local isWindowMinimized = false
+
+	-- Frame principal (Puffy Claymorphism Style)
 	local mainFrame = Instance.new("Frame")
-	mainFrame.Size = UDim2.new(0, 440, 0, 580)
-	mainFrame.Position = UDim2.new(0.5, -220, 0.5, -290)
-	mainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 22)
+	mainFrame.Size = UDim2.new(0, defaultWidth, 0, defaultHeight)
+	mainFrame.Position = UDim2.new(0.5, -defaultWidth/2, 0.5, -defaultHeight/2)
+	mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 48)
 	mainFrame.BorderSizePixel = 0
 	mainFrame.Active = true
 	mainFrame.Draggable = true
 	mainFrame.ClipsDescendants = true
 	mainFrame.Parent = screenGui
 
+	-- Bordure claymorphic douce (Puffy Stroke)
 	local border = Instance.new("UIStroke")
-	border.Thickness = 2
-	border.Color = Color3.fromRGB(0, 180, 255)
+	border.Thickness = 3
+	border.Color = Color3.fromRGB(48, 48, 75)
 	border.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	border.Parent = mainFrame
 
 	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 16)
+	corner.CornerRadius = UDim.new(0, 20) -- Coins très arrondis style Clay
 	corner.Parent = mainFrame
 
-	-- Titre
-	local titleFrame = Instance.new("Frame")
-	titleFrame.Size = UDim2.new(1, 0, 0, 45)
-	titleFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 32)
-	titleFrame.BorderSizePixel = 0
-	titleFrame.Parent = mainFrame
+	-- Barre de titre (Style Windows 11 / Clay)
+	local titleBar = Instance.new("Frame")
+	titleBar.Size = UDim2.new(1, 0, 0, 45)
+	titleBar.BackgroundColor3 = Color3.fromRGB(38, 38, 58)
+	titleBar.BorderSizePixel = 0
+	titleBar.Parent = mainFrame
 
 	local titleCorner = Instance.new("UICorner")
-	titleCorner.CornerRadius = UDim.new(0, 16)
-	titleCorner.Parent = titleFrame
+	titleCorner.CornerRadius = UDim.new(0, 20)
+	titleCorner.Parent = titleBar
 
+	-- Cacher l'arrondi du bas pour la transition avec le corps
 	local titleHideBottom = Instance.new("Frame")
 	titleHideBottom.Size = UDim2.new(1, 0, 0, 10)
 	titleHideBottom.Position = UDim2.new(0, 0, 1, -10)
-	titleHideBottom.BackgroundColor3 = Color3.fromRGB(18, 18, 32)
+	titleHideBottom.BackgroundColor3 = Color3.fromRGB(38, 38, 58)
 	titleHideBottom.BorderSizePixel = 0
-	titleHideBottom.Parent = titleFrame
+	titleHideBottom.Parent = titleBar
 
-	local title = Instance.new("TextLabel")
-	title.Size = UDim2.new(1, 0, 1, 0)
-	title.BackgroundTransparency = 1
-	title.Text = "⚡ ELEMENTAL FARMER PRO V10 ⚡"
-	title.TextColor3 = Color3.fromRGB(255, 255, 255)
-	title.TextSize = 14
-	title.Font = Enum.Font.GothamBold
-	title.Parent = titleFrame
+	local titleText = Instance.new("TextLabel")
+	titleText.Size = UDim2.new(0.65, 0, 1, 0)
+	titleText.Position = UDim2.new(0, 16, 0, 0)
+	titleText.BackgroundTransparency = 1
+	titleText.Text = "⚡ ELEMENTAL FARMER V11"
+	titleText.TextColor3 = Color3.fromRGB(240, 240, 255)
+	titleText.TextSize = 13
+	titleText.Font = Enum.Font.GothamBold
+	titleText.TextXAlignment = Enum.TextXAlignment.Left
+	titleText.Parent = titleBar
+
+	-- Conteneur des boutons Windows
+	local winControls = Instance.new("Frame")
+	winControls.Size = UDim2.new(0, 130, 1, 0)
+	winControls.Position = UDim2.new(1, -130, 0, 0)
+	winControls.BackgroundTransparency = 1
+	winControls.Parent = titleBar
+
+	local navList = Instance.new("UIListLayout")
+	navList.FillDirection = Enum.FillDirection.Horizontal
+	navList.HorizontalAlignment = Enum.HorizontalAlignment.Right
+	navList.SortOrder = Enum.SortOrder.LayoutOrder
+	navList.Parent = winControls
+
+	-- Variables de visibilité pour la minimisation
+	local tabBar = Instance.new("Frame")
+	local pageContainer = Instance.new("Frame")
+
+	local function createWinBtn(text, order, hoverColor, clickCallback)
+		local btn = Instance.new("TextButton")
+		btn.Size = UDim2.new(0, 40, 1, 0)
+		btn.BackgroundTransparency = 1
+		btn.Text = text
+		btn.TextColor3 = Color3.fromRGB(200, 200, 220)
+		btn.TextSize = 13
+		btn.Font = Enum.Font.GothamBold
+		btn.LayoutOrder = order
+		btn.Parent = winControls
+
+		btn.MouseEnter:Connect(function()
+			btn.BackgroundTransparency = 0
+			btn.BackgroundColor3 = hoverColor
+			btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+		end)
+		btn.MouseLeave:Connect(function()
+			btn.BackgroundTransparency = 1
+			btn.TextColor3 = Color3.fromRGB(200, 200, 220)
+		end)
+		btn.MouseButton1Click:Connect(clickCallback)
+	end
+
+	-- Bouton Réduire (_) Windows
+	createWinBtn("—", 1, Color3.fromRGB(50, 50, 75), function()
+		isWindowMinimized = not isWindowMinimized
+		if isWindowMinimized then
+			tabBar.Visible = false
+			pageContainer.Visible = false
+			mainFrame:TweenSize(UDim2.new(0, defaultWidth, 0, minimizedHeight), "Out", "Quad", 0.25, true)
+		else
+			mainFrame:TweenSize(UDim2.new(0, defaultWidth, 0, isWindowMaximized and maximizedHeight or defaultHeight), "Out", "Quad", 0.25, true, function()
+				tabBar.Visible = true
+				pageContainer.Visible = true
+			end)
+		end
+	end)
+
+	-- Bouton Agrandir (▢) Windows
+	createWinBtn("▢", 2, Color3.fromRGB(50, 50, 75), function()
+		if isWindowMinimized then return end
+		isWindowMaximized = not isWindowMaximized
+		local targetH = isWindowMaximized and maximizedHeight or defaultHeight
+		mainFrame:TweenSize(UDim2.new(0, defaultWidth, 0, targetH), "Out", "Quad", 0.25, true)
+	end)
+
+	-- Bouton Fermer (X) Windows (Rouge au survol)
+	createWinBtn("✕", 3, Color3.fromRGB(190, 40, 40), function()
+		stopFarm()
+		pcall(function()
+			RunService:Set3dRenderingEnabled(true)
+		end)
+		screenGui:Destroy()
+	end)
 
 	-- Bar d'onglets (Navigation Bar)
-	local tabBar = Instance.new("Frame")
 	tabBar.Size = UDim2.new(1, 0, 0, 36)
 	tabBar.Position = UDim2.new(0, 0, 0, 45)
-	tabBar.BackgroundColor3 = Color3.fromRGB(15, 15, 26)
+	tabBar.BackgroundColor3 = Color3.fromRGB(20, 20, 34)
 	tabBar.BorderSizePixel = 0
 	tabBar.Parent = mainFrame
 
@@ -653,7 +736,6 @@ local function createUltimateGUI()
 	tabLayout.Parent = tabBar
 
 	-- Conteneur de pages
-	local pageContainer = Instance.new("Frame")
 	pageContainer.Size = UDim2.new(1, -16, 1, -95)
 	pageContainer.Position = UDim2.new(0, 8, 0, 87)
 	pageContainer.BackgroundTransparency = 1
@@ -674,7 +756,7 @@ local function createUltimateGUI()
 		scroll.Parent = pageContainer
 
 		local list = Instance.new("UIListLayout")
-		list.Padding = UDim.new(0, 8)
+		list.Padding = UDim.new(0, 10)
 		list.SortOrder = Enum.SortOrder.LayoutOrder
 		list.Parent = scroll
 
@@ -683,17 +765,17 @@ local function createUltimateGUI()
 		end)
 
 		local pad = Instance.new("UIPadding")
-		pad.PaddingTop = UDim.new(0, 2)
-		pad.PaddingBottom = UDim.new(0, 12)
-		pad.PaddingLeft = UDim.new(0, 4)
-		pad.PaddingRight = UDim.new(0, 10)
+		pad.PaddingTop = UDim.new(0, 4)
+		pad.PaddingBottom = UDim.new(0, 14)
+		pad.PaddingLeft = UDim.new(0, 6)
+		pad.PaddingRight = UDim.new(0, 12)
 		pad.Parent = scroll
 
 		pages[name] = scroll
 		return scroll
 	end
 
-	-- Initialisation des pages d'onglets
+	-- Initialisation des pages
 	local pageStatus = createTabPage("Status", 1)
 	local pageCombat = createTabPage("Combat", 2)
 	local pageTP = createTabPage("TP", 3)
@@ -707,11 +789,11 @@ local function createUltimateGUI()
 		end
 		for name, btn in pairs(tabButtons) do
 			if name == tabName then
-				btn.BackgroundColor3 = Color3.fromRGB(25, 25, 45)
+				btn.BackgroundColor3 = Color3.fromRGB(30, 30, 48)
 				btn.TextColor3 = Color3.fromRGB(0, 180, 255)
 				btn.Font = Enum.Font.GothamBold
 			else
-				btn.BackgroundColor3 = Color3.fromRGB(15, 15, 26)
+				btn.BackgroundColor3 = Color3.fromRGB(20, 20, 34)
 				btn.TextColor3 = Color3.fromRGB(160, 160, 180)
 				btn.Font = Enum.Font.Gotham
 			end
@@ -722,7 +804,7 @@ local function createUltimateGUI()
 	local function createTabButton(name, labelText, layoutOrder)
 		local btn = Instance.new("TextButton")
 		btn.Size = UDim2.new(0.2, 0, 1, 0)
-		btn.BackgroundColor3 = Color3.fromRGB(15, 15, 26)
+		btn.BackgroundColor3 = Color3.fromRGB(20, 20, 34)
 		btn.BorderSizePixel = 0
 		btn.Text = labelText
 		btn.TextColor3 = Color3.fromRGB(160, 160, 180)
@@ -745,36 +827,47 @@ local function createUltimateGUI()
 	createTabButton("System", "⚙️ Système", 5)
 
 	-- ============================================
-	-- OPTIONS : RENDERERS FLATS
+	-- CONTRÔLES STYLISÉS CLAYMORPHISM (PUFFY LOOK)
 	-- ============================================
 	local function createToggleRow(parent, label, configKey, layoutOrder)
 		local frame = Instance.new("Frame")
-		frame.Size = UDim2.new(1, 0, 0, 32)
+		frame.Size = UDim2.new(1, 0, 0, 34)
 		frame.BackgroundTransparency = 1
 		frame.LayoutOrder = layoutOrder
 
+		-- Puffy Clay Toggle Button
 		local btn = Instance.new("TextButton")
-		btn.Size = UDim2.new(0, 20, 0, 20)
-		btn.Position = UDim2.new(0, 4, 0.5, -10)
-		btn.BackgroundColor3 = CONFIG[configKey] and Color3.fromRGB(0, 180, 255) or Color3.fromRGB(30, 30, 48)
+		btn.Size = UDim2.new(0, 22, 0, 22)
+		btn.Position = UDim2.new(0, 4, 0.5, -11)
+		btn.BackgroundColor3 = CONFIG[configKey] and Color3.fromRGB(0, 180, 255) or Color3.fromRGB(24, 24, 38)
 		btn.Text = CONFIG[configKey] and "✓" or ""
 		btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-		btn.TextSize = 10
+		btn.TextSize = 11
 		btn.Font = Enum.Font.GothamBold
 		
 		local btnCorner = Instance.new("UICorner")
-		btnCorner.CornerRadius = UDim.new(0, 4)
+		btnCorner.CornerRadius = UDim.new(0, 6) -- Arrondi doux
 		btnCorner.Parent = btn
 		
+		-- UIStroke pour le relief 3D
 		local btnStroke = Instance.new("UIStroke")
-		btnStroke.Thickness = 1
-		btnStroke.Color = Color3.fromRGB(50, 50, 75)
+		btnStroke.Thickness = 2
+		btnStroke.Color = CONFIG[configKey] and Color3.fromRGB(80, 210, 255) or Color3.fromRGB(42, 42, 62)
 		btnStroke.Parent = btn
 		btn.Parent = frame
 
+		-- Soft gradient pour l'aspect argileux
+		local gradient = Instance.new("UIGradient")
+		gradient.Rotation = 90
+		gradient.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 200, 200))
+		})
+		gradient.Parent = btn
+
 		local lbl = Instance.new("TextLabel")
-		lbl.Size = UDim2.new(1, -34, 1, 0)
-		lbl.Position = UDim2.new(0, 34, 0, 0)
+		lbl.Size = UDim2.new(1, -36, 1, 0)
+		lbl.Position = UDim2.new(0, 36, 0, 0)
 		lbl.BackgroundTransparency = 1
 		lbl.Text = label
 		lbl.TextColor3 = Color3.fromRGB(220, 220, 240)
@@ -785,7 +878,8 @@ local function createUltimateGUI()
 
 		btn.MouseButton1Click:Connect(function()
 			CONFIG[configKey] = not CONFIG[configKey]
-			animateColor(btn, "BackgroundColor3", CONFIG[configKey] and Color3.fromRGB(0, 180, 255) or Color3.fromRGB(30, 30, 48))
+			animateColor(btn, "BackgroundColor3", CONFIG[configKey] and Color3.fromRGB(0, 180, 255) or Color3.fromRGB(24, 24, 38))
+			btnStroke.Color = CONFIG[configKey] and Color3.fromRGB(80, 210, 255) or Color3.fromRGB(42, 42, 62)
 			btn.Text = CONFIG[configKey] and "✓" or ""
 		end)
 
@@ -813,20 +907,28 @@ local function createUltimateGUI()
 		local btn = Instance.new("TextButton")
 		btn.Size = UDim2.new(0.52, 0, 1, 0)
 		btn.Position = UDim2.new(0.48, 0, 0, 0)
-		btn.BackgroundColor3 = Color3.fromRGB(25, 25, 42)
+		btn.BackgroundColor3 = Color3.fromRGB(22, 22, 36)
 		btn.Text = tostring(initialValue)
 		btn.TextColor3 = Color3.fromRGB(255, 255, 255)
 		btn.TextSize = 11
 		btn.Font = Enum.Font.GothamSemibold
 		
 		local btnCorner = Instance.new("UICorner")
-		btnCorner.CornerRadius = UDim.new(0, 6)
+		btnCorner.CornerRadius = UDim.new(0, 8) -- Plus arrondi
 		btnCorner.Parent = btn
 		
 		local btnStroke = Instance.new("UIStroke")
-		btnStroke.Thickness = 1
-		btnStroke.Color = Color3.fromRGB(50, 50, 80)
+		btnStroke.Thickness = 2
+		btnStroke.Color = Color3.fromRGB(45, 45, 68)
 		btnStroke.Parent = btn
+
+		local gradient = Instance.new("UIGradient")
+		gradient.Rotation = 90
+		gradient.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(190, 190, 190))
+		})
+		gradient.Parent = btn
 		btn.Parent = frame
 
 		local optList = options
@@ -865,15 +967,20 @@ local function createUltimateGUI()
 		local input = Instance.new("TextBox")
 		input.Size = UDim2.new(0.52, 0, 1, 0)
 		input.Position = UDim2.new(0.48, 0, 0, 0)
-		input.BackgroundColor3 = Color3.fromRGB(25, 25, 42)
+		input.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
 		input.Text = tostring(initialValue)
 		input.TextColor3 = Color3.fromRGB(255, 255, 255)
 		input.TextSize = 11
 		input.Font = Enum.Font.Gotham
 		
 		local cornerInput = Instance.new("UICorner")
-		cornerInput.CornerRadius = UDim.new(0, 6)
+		cornerInput.CornerRadius = UDim.new(0, 8)
 		cornerInput.Parent = input
+
+		local strokeInput = Instance.new("UIStroke")
+		strokeInput.Thickness = 2
+		strokeInput.Color = Color3.fromRGB(38, 38, 58)
+		strokeInput.Parent = input
 		input.Parent = frame
 
 		input.FocusLost:Connect(function()
@@ -898,7 +1005,7 @@ local function createUltimateGUI()
 	end
 
 	-- ============================================
-	-- ONGLET 1 : STATUS (STATS & INTERRUPTEUR)
+	-- ONGLET 1 : STATUS (STATS CLAY)
 	-- ============================================
 	local mainToggleBtn = Instance.new("TextButton")
 	mainToggleBtn.Size = UDim2.new(1, 0, 0, 45)
@@ -910,8 +1017,21 @@ local function createUltimateGUI()
 	mainToggleBtn.LayoutOrder = 1
 	
 	local toggleCornerStatus = Instance.new("UICorner")
-	toggleCornerStatus.CornerRadius = UDim.new(0, 8)
+	toggleCornerStatus.CornerRadius = UDim.new(0, 10)
 	toggleCornerStatus.Parent = mainToggleBtn
+	
+	local toggleStroke = Instance.new("UIStroke")
+	toggleStroke.Thickness = 2
+	toggleStroke.Color = Color3.fromRGB(90, 220, 140)
+	toggleStroke.Parent = mainToggleBtn
+
+	local toggleGrad = Instance.new("UIGradient")
+	toggleGrad.Rotation = 90
+	toggleGrad.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 180, 180))
+	})
+	toggleGrad.Parent = mainToggleBtn
 	mainToggleBtn.Parent = pageStatus
 
 	mainToggleBtn.MouseEnter:Connect(function()
@@ -926,23 +1046,30 @@ local function createUltimateGUI()
 			stopFarm()
 			mainToggleBtn.Text = "DÉMARRER L'AUTOFARM [F6]"
 			mainToggleBtn.BackgroundColor3 = Color3.fromRGB(40, 180, 100)
+			toggleStroke.Color = Color3.fromRGB(90, 220, 140)
 		else
 			startFarm()
 			mainToggleBtn.Text = "ARRÊTER L'AUTOFARM [F6]"
 			mainToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+			toggleStroke.Color = Color3.fromRGB(240, 90, 90)
 		end
 	end)
 
-	-- Stats Card
+	-- Stats Card (Clay look)
 	local statusStatsFrame = Instance.new("Frame")
 	statusStatsFrame.Size = UDim2.new(1, 0, 0, 110)
-	statusStatsFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+	statusStatsFrame.BackgroundColor3 = Color3.fromRGB(22, 22, 38)
 	statusStatsFrame.BorderSizePixel = 0
 	statusStatsFrame.LayoutOrder = 2
 	
 	local statusStatsCorner = Instance.new("UICorner")
-	statusStatsCorner.CornerRadius = UDim.new(0, 8)
+	statusStatsCorner.CornerRadius = UDim.new(0, 10)
 	statusStatsCorner.Parent = statusStatsFrame
+
+	local cardStroke = Instance.new("UIStroke")
+	cardStroke.Thickness = 2
+	cardStroke.Color = Color3.fromRGB(40, 40, 62)
+	cardStroke.Parent = statusStatsFrame
 
 	local statusStatsLabel = Instance.new("TextLabel")
 	statusStatsLabel.Size = UDim2.new(1, -20, 1, -20)
@@ -967,7 +1094,7 @@ local function createUltimateGUI()
 	createToggleRow(pageStatus, "🚪 Auto Rejoindre en Donjon", "AutoJoinDungeon", 9)
 
 	-- ============================================
-	-- ONGLET 2 : COMBAT (ARMES, ELEMENTS & SKILLS)
+	-- ONGLET 2 : COMBAT
 	-- ============================================
 	createSectionHeader(pageCombat, "LOGIQUE D'ÉQUIPEMENT", 1)
 	createDropdownRow(pageCombat, "⚙️ Mode d'Équipement :", CONFIG.EquipMode, {"Both", "Weapon Only", "Element Only", "None"}, 2, function(newVal)
@@ -1005,7 +1132,7 @@ local function createUltimateGUI()
 
 	createSectionHeader(pageCombat, "COMPÉTENCES AUTOS (SKILLS)", 10)
 	
-	-- Flat active slots selector
+	-- Flat active slots selector (Clay version)
 	local function createSkillsRow(parent, layoutOrder)
 		local frame = Instance.new("Frame")
 		frame.Size = UDim2.new(1, 0, 0, 36)
@@ -1035,18 +1162,33 @@ local function createUltimateGUI()
 			btn.Font = Enum.Font.GothamBold
 			
 			local cornerS = Instance.new("UICorner")
-			cornerS.CornerRadius = UDim.new(0, 5)
+			cornerS.CornerRadius = UDim.new(0, 6)
 			cornerS.Parent = btn
+
+			local strokeS = Instance.new("UIStroke")
+			strokeS.Thickness = 2
+			strokeS.Color = isActivated and Color3.fromRGB(80, 210, 255) or Color3.fromRGB(42, 42, 62)
+			strokeS.Parent = btn
+
+			local gradS = Instance.new("UIGradient")
+			gradS.Rotation = 90
+			gradS.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 180, 180))
+			})
+			gradS.Parent = btn
 
 			btn.MouseButton1Click:Connect(function()
 				local idx = table.find(CONFIG.SelectedSkills, slot)
 				if idx then
 					table.remove(CONFIG.SelectedSkills, idx)
 					animateColor(btn, "BackgroundColor3", Color3.fromRGB(30, 30, 48))
+					strokeS.Color = Color3.fromRGB(42, 42, 62)
 				else
 					table.insert(CONFIG.SelectedSkills, slot)
 					table.sort(CONFIG.SelectedSkills)
 					animateColor(btn, "BackgroundColor3", Color3.fromRGB(0, 180, 255))
+					strokeS.Color = Color3.fromRGB(80, 210, 255)
 				end
 			end)
 			btn.Parent = frame
@@ -1102,7 +1244,7 @@ local function createUltimateGUI()
 	createToggleRow(pageTP, "👻 Mode Noclip Permanent (Traverser)", "NoclipPermanent", 9)
 
 	-- ============================================
-	-- ONGLET 4 : DONJON & VENTE INVENTAIRE
+	-- ONGLET 4 : DONJON & VENTE
 	-- ============================================
 	createSectionHeader(pageDungeon, "LANCEMENT DE DONJONS", 1)
 	createDropdownRow(pageDungeon, "🏰 Nom du Donjon :", CONFIG.DungeonName, DUNGEONS_LIST, 2, function(newVal)
@@ -1143,7 +1285,7 @@ local function createUltimateGUI()
 	end)
 
 	createSectionHeader(pageSystem, "OPTIMISATION SYSTÈME", 4)
-	-- Rendu 3D
+	-- Rendu 3D (Clay style)
 	local optiFrame = Instance.new("Frame")
 	optiFrame.Size = UDim2.new(1, 0, 0, 34)
 	optiFrame.BackgroundTransparency = 1
@@ -1152,15 +1294,28 @@ local function createUltimateGUI()
 	local optiBtn = Instance.new("TextButton")
 	optiBtn.Size = UDim2.new(0, 18, 0, 18)
 	optiBtn.Position = UDim2.new(0, 4, 0.5, -9)
-	optiBtn.BackgroundColor3 = CONFIG.Disable3DRendering and Color3.fromRGB(0, 180, 255) or Color3.fromRGB(30, 30, 48)
+	optiBtn.BackgroundColor3 = CONFIG.Disable3DRendering and Color3.fromRGB(0, 180, 255) or Color3.fromRGB(24, 24, 38)
 	optiBtn.Text = CONFIG.Disable3DRendering and "✓" or ""
 	optiBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 	optiBtn.TextSize = 10
 	optiBtn.Font = Enum.Font.GothamBold
 	
 	local optiCorner = Instance.new("UICorner")
-	optiCorner.CornerRadius = UDim.new(0, 4)
+	optiCorner.CornerRadius = UDim.new(0, 5)
 	optiCorner.Parent = optiBtn
+
+	local optiStroke = Instance.new("UIStroke")
+	optiStroke.Thickness = 2
+	optiStroke.Color = CONFIG.Disable3DRendering and Color3.fromRGB(80, 210, 255) or Color3.fromRGB(42, 42, 62)
+	optiStroke.Parent = optiBtn
+
+	local optiGrad = Instance.new("UIGradient")
+	optiGrad.Rotation = 90
+	optiGrad.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 180, 180))
+	})
+	optiGrad.Parent = optiBtn
 	optiBtn.Parent = optiFrame
 
 	local optiLbl = Instance.new("TextLabel")
@@ -1176,44 +1331,14 @@ local function createUltimateGUI()
 
 	optiBtn.MouseButton1Click:Connect(function()
 		CONFIG.Disable3DRendering = not CONFIG.Disable3DRendering
-		animateColor(optiBtn, "BackgroundColor3", CONFIG.Disable3DRendering and Color3.fromRGB(0, 180, 255) or Color3.fromRGB(30, 30, 48))
+		animateColor(optiBtn, "BackgroundColor3", CONFIG.Disable3DRendering and Color3.fromRGB(0, 180, 255) or Color3.fromRGB(24, 24, 38))
+		optiStroke.Color = CONFIG.Disable3DRendering and Color3.fromRGB(80, 210, 255) or Color3.fromRGB(42, 42, 62)
 		optiBtn.Text = CONFIG.Disable3DRendering and "✓" or ""
 		pcall(function()
 			RunService:Set3dRenderingEnabled(not CONFIG.Disable3DRendering)
 		end)
 	end)
 	optiFrame.Parent = pageSystem
-
-	createSectionHeader(pageSystem, "FERMETURE DE L'EXÉCUTION", 6)
-	
-	local closeBtn = Instance.new("TextButton")
-	closeBtn.Size = UDim2.new(1, 0, 0, 36)
-	closeBtn.BackgroundColor3 = Color3.fromRGB(180, 45, 45)
-	closeBtn.Text = "QUITTER & FERMER L'INTERFACE"
-	closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-	closeBtn.TextSize = 12
-	closeBtn.Font = Enum.Font.GothamBold
-	closeBtn.LayoutOrder = 7
-	
-	local closeCorner = Instance.new("UICorner")
-	closeCorner.CornerRadius = UDim.new(0, 8)
-	closeCorner.Parent = closeBtn
-	
-	closeBtn.MouseEnter:Connect(function()
-		animateColor(closeBtn, "BackgroundColor3", Color3.fromRGB(210, 60, 60))
-	end)
-	closeBtn.MouseLeave:Connect(function()
-		animateColor(closeBtn, "BackgroundColor3", Color3.fromRGB(180, 45, 45))
-	end)
-
-	closeBtn.MouseButton1Click:Connect(function()
-		stopFarm()
-		pcall(function()
-			RunService:Set3dRenderingEnabled(true)
-		end)
-		screenGui:Destroy()
-	end)
-	closeBtn.Parent = pageSystem
 
 	-- ============================================
 	-- INITIALISATION ET MISE A JOUR
@@ -1222,7 +1347,7 @@ local function createUltimateGUI()
 	-- Par défaut, afficher le premier onglet (Status)
 	selectTab("Status")
 
-	-- Update des stats asynchrones sur le panel et la page Status
+	-- Update des stats asynchrones
 	task.spawn(function()
 		while screenGui.Parent do
 			local elapsed = os.time() - STATS.StartTime
@@ -1241,13 +1366,12 @@ local function createUltimateGUI()
 				.. " | 💰 Ventes : "
 				.. STATS.ItemsSold
 
-			statsLabel.Text = fullStatsText
 			statusStatsLabel.Text = fullStatsText
 			task.wait(1)
 		end
 	end)
 
-	-- Touche F6 pour toggle rapide
+	-- Touche F6
 	UserInputService.InputBegan:Connect(function(input, gameProcessed)
 		if gameProcessed then return end
 		if input.KeyCode == Enum.KeyCode.F6 then
@@ -1255,15 +1379,17 @@ local function createUltimateGUI()
 				stopFarm()
 				mainToggleBtn.Text = "DÉMARRER L'AUTOFARM [F6]"
 				mainToggleBtn.BackgroundColor3 = Color3.fromRGB(40, 180, 100)
+				toggleStroke.Color = Color3.fromRGB(90, 220, 140)
 			else
 				startFarm()
 				mainToggleBtn.Text = "ARRÊTER L'AUTOFARM [F6]"
 				mainToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+				toggleStroke.Color = Color3.fromRGB(240, 90, 90)
 			end
 		end
 	end)
 
-	print("✅ GUI ULTIME V10 CHARGÉE ET ENTIÈREMENT DÉPLOYÉE !")
+	print("✅ GUI ULTIME V11 CLAYMORPHISM & WINDOWS STYLE CHARGÉE !")
 end
 
 -- ============================================================
