@@ -1696,92 +1696,102 @@ local function createUltimateGUI()
 
 
 	-- 4. DUNGEON TAB
-	createSectionHeader(pageDungeon, "LOBBY SETTINGS", 1)
-	createDropdownRow(pageDungeon, "Dungeon Name :", "rbxassetid://6034287517", CONFIG.DungeonName, DUNGEONS_LIST, 2, function(newVal)
-		CONFIG.DungeonName = newVal
-	end)
+	local dungeonSuccess, dungeonErr = pcall(function()
+		createSectionHeader(pageDungeon, "LOBBY SETTINGS", 1)
+		createDropdownRow(pageDungeon, "Dungeon Name :", "rbxassetid://6034287517", CONFIG.DungeonName, DUNGEONS_LIST, 2, function(newVal)
+			CONFIG.DungeonName = newVal
+		end)
 
-	createDropdownRow(pageDungeon, "Difficulty :", "rbxassetid://6034287517", CONFIG.Difficulty, DIFFICULTIES_LIST, 3, function(newVal)
-		CONFIG.Difficulty = newVal
-	end)
+		createDropdownRow(pageDungeon, "Difficulty :", "rbxassetid://6034287517", CONFIG.Difficulty, DIFFICULTIES_LIST, 3, function(newVal)
+			CONFIG.Difficulty = newVal
+		end)
 
-	createToggleRow(pageDungeon, "Auto Join Lobby", "rbxassetid://6034855071", "AutoJoinDungeon", 4)
-	createToggleRow(pageDungeon, "Auto Retry Dungeon", "rbxassetid://6031768426", "AutoRetry", 5)
-	
-	createInputRow(pageDungeon, "Retry Delay (s) :", "rbxassetid://6031768426", CONFIG.RetryDelay, 6, function(box, text)
-		local val = tonumber(text)
-		if val and val >= 0 and val <= 15 then CONFIG.RetryDelay = val else box.Text = tostring(CONFIG.RetryDelay) end
-	end)
+		createToggleRow(pageDungeon, "Auto Join Lobby", "rbxassetid://6034855071", "AutoJoinDungeon", 4)
+		createToggleRow(pageDungeon, "Auto Retry Dungeon", "rbxassetid://6031768426", "AutoRetry", 5)
+		
+		createInputRow(pageDungeon, "Retry Delay (s) :", "rbxassetid://6031768426", CONFIG.RetryDelay, 6, function(box, text)
+			local val = tonumber(text)
+			if val and val >= 0 and val <= 15 then CONFIG.RetryDelay = val else box.Text = tostring(CONFIG.RetryDelay) end
+		end)
 
-	createSectionHeader(pageDungeon, "HEALING CONFIG", 7)
-	createInputRow(pageDungeon, "Heal Threshold (life %) :", "rbxassetid://6034287517", math.floor(CONFIG.HealThreshold * 100), 8, function(box, text)
-		local val = tonumber(text)
-		if val and val >= 5 and val <= 100 then CONFIG.HealThreshold = val / 100 else box.Text = tostring(math.floor(CONFIG.HealThreshold * 100)) end
-	end)
+		createSectionHeader(pageDungeon, "HEALING CONFIG", 7)
+		createInputRow(pageDungeon, "Heal Threshold (life %) :", "rbxassetid://6034287517", math.floor(CONFIG.HealThreshold * 100), 8, function(box, text)
+			local val = tonumber(text)
+			if val and val >= 5 and val <= 100 then CONFIG.HealThreshold = val / 100 else box.Text = tostring(math.floor(CONFIG.HealThreshold * 100)) end
+		end)
 
-	createSectionHeader(pageDungeon, "LOOT COLLECT", 9)
-	createToggleRow(pageDungeon, "Auto Collect Drops", "rbxassetid://6034287523", "AutoCollect", 10)
+		createSectionHeader(pageDungeon, "LOOT COLLECT", 9)
+		createToggleRow(pageDungeon, "Auto Collect Drops", "rbxassetid://6034287523", "AutoCollect", 10)
+	end)
+	if not dungeonSuccess then
+		print("DUNGEON TAB ERROR: " .. tostring(dungeonErr))
+	end
 
 
 	-- 5. SYSTEM TAB
-	createSectionHeader(pageSystem, "INVENTORY SELL", 1)
-	createToggleRow(pageSystem, "Auto Sell Items", "rbxassetid://6034287514", "AutoSell", 2)
-	createToggleRow(pageSystem, "Sell Common items", "rbxassetid://6034287514", "SellCommon", 3)
-	createToggleRow(pageSystem, "Sell Uncommon items", "rbxassetid://6034287514", "SellUncommon", 4)
-	createToggleRow(pageSystem, "Sell Rare items", "rbxassetid://6034287514", "SellRare", 5)
+	local systemSuccess, systemErr = pcall(function()
+		createSectionHeader(pageSystem, "INVENTORY SELL", 1)
+		createToggleRow(pageSystem, "Auto Sell Items", "rbxassetid://6034287514", "AutoSell", 2)
+		createToggleRow(pageSystem, "Sell Common items", "rbxassetid://6034287514", "SellCommon", 3)
+		createToggleRow(pageSystem, "Sell Uncommon items", "rbxassetid://6034287514", "SellUncommon", 4)
+		createToggleRow(pageSystem, "Sell Rare items", "rbxassetid://6034287514", "SellRare", 5)
 
-	createSectionHeader(pageSystem, "SYSTEM OPTIMIZATION", 6)
-	
-	-- 3D Rendering (Clay style)
-	local optiFrame = Instance.new("Frame")
-	optiFrame.Size = UDim2.new(1, 0, 0, 34)
-	optiFrame.BackgroundTransparency = 1
-	optiFrame.LayoutOrder = 7
+		createSectionHeader(pageSystem, "SYSTEM OPTIMIZATION", 6)
+		
+		-- 3D Rendering (Clay style)
+		local optiFrame = Instance.new("Frame")
+		optiFrame.Size = UDim2.new(1, 0, 0, 34)
+		optiFrame.BackgroundTransparency = 1
+		optiFrame.LayoutOrder = 7
 
-	local optiBtn = Instance.new("TextButton")
-	optiBtn.Size = UDim2.new(0, 18, 0, 18)
-	optiBtn.Position = UDim2.new(0, 4, 0.5, -9)
-	optiBtn.BackgroundColor3 = CONFIG.Disable3DRendering and colorBlueSelect or colorSlateSidebar
-	optiBtn.Text = CONFIG.Disable3DRendering and "✓" or ""
-	optiBtn.TextColor3 = colorTextWhite
-	optiBtn.TextSize = 10
-	optiBtn.Font = Enum.Font.FredokaOne
-	
-	local optiCorner = Instance.new("UICorner")
-	optiCorner.CornerRadius = UDim.new(0, 5)
-	optiCorner.Parent = optiBtn
-
-	local optiStroke = Instance.new("UIStroke")
-	optiStroke.Thickness = 2
-	optiStroke.Color = colorBorderDark
-	optiStroke.Parent = optiBtn
-	optiBtn.Parent = optiFrame
-
-	local optiLbl = Instance.new("TextLabel")
-	optiLbl.Size = UDim2.new(1, -34, 1, 0)
-	optiLbl.Position = UDim2.new(0, 34, 0, 0)
-	optiLbl.BackgroundTransparency = 1
-	optiLbl.Text = "Night Mode (Disable 3D Rendering)"
-	optiLbl.TextColor3 = colorTextWhite
-	optiLbl.TextSize = 11
-	optiLbl.TextXAlignment = Enum.TextXAlignment.Left
-	optiLbl.Font = Enum.Font.GothamBold
-	
-	local optiLblStroke = Instance.new("UIStroke")
-	optiLblStroke.Thickness = 1
-	optiLblStroke.Color = Color3.fromRGB(0, 0, 0)
-	optiLblStroke.Parent = optiLbl
-	optiLbl.Parent = optiFrame
-
-	optiBtn.Activated:Connect(function()
-		CONFIG.Disable3DRendering = not CONFIG.Disable3DRendering
+		local optiBtn = Instance.new("TextButton")
+		optiBtn.Size = UDim2.new(0, 18, 0, 18)
+		optiBtn.Position = UDim2.new(0, 4, 0.5, -9)
 		optiBtn.BackgroundColor3 = CONFIG.Disable3DRendering and colorBlueSelect or colorSlateSidebar
 		optiBtn.Text = CONFIG.Disable3DRendering and "✓" or ""
-		pcall(function()
-			RunService:Set3dRenderingEnabled(not CONFIG.Disable3DRendering)
+		optiBtn.TextColor3 = colorTextWhite
+		optiBtn.TextSize = 10
+		optiBtn.Font = Enum.Font.FredokaOne
+		
+		local optiCorner = Instance.new("UICorner")
+		optiCorner.CornerRadius = UDim.new(0, 5)
+		optiCorner.Parent = optiBtn
+
+		local optiStroke = Instance.new("UIStroke")
+		optiStroke.Thickness = 2
+		optiStroke.Color = colorBorderDark
+		optiStroke.Parent = optiBtn
+		optiBtn.Parent = optiFrame
+
+		local optiLbl = Instance.new("TextLabel")
+		optiLbl.Size = UDim2.new(1, -34, 1, 0)
+		optiLbl.Position = UDim2.new(0, 34, 0, 0)
+		optiLbl.BackgroundTransparency = 1
+		optiLbl.Text = "Night Mode (Disable 3D Rendering)"
+		optiLbl.TextColor3 = colorTextWhite
+		optiLbl.TextSize = 11
+		optiLbl.TextXAlignment = Enum.TextXAlignment.Left
+		optiLbl.Font = Enum.Font.GothamBold
+		
+		local optiLblStroke = Instance.new("UIStroke")
+		optiLblStroke.Thickness = 1
+		optiLblStroke.Color = Color3.fromRGB(0, 0, 0)
+		optiLblStroke.Parent = optiLbl
+		optiLbl.Parent = optiFrame
+
+		optiBtn.Activated:Connect(function()
+			CONFIG.Disable3DRendering = not CONFIG.Disable3DRendering
+			optiBtn.BackgroundColor3 = CONFIG.Disable3DRendering and colorBlueSelect or colorSlateSidebar
+			optiBtn.Text = CONFIG.Disable3DRendering and "✓" or ""
+			pcall(function()
+				RunService:Set3dRenderingEnabled(not CONFIG.Disable3DRendering)
+			end)
 		end)
+		optiFrame.Parent = pageSystem
 	end)
-	optiFrame.Parent = pageSystem
+	if not systemSuccess then
+		print("SYSTEM TAB ERROR: " .. tostring(systemErr))
+	end
 	
 	-- ============================================
 	-- INITIALISATION ET MISE A JOUR
