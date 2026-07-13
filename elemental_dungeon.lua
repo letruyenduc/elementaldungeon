@@ -710,6 +710,12 @@ end
 -- 11. CRÉATION DE L'INTERFACE AU STYLE OFFICIEL DU JEU (V19)
 -- ============================================================
 
+local function animateColor(guiObject, property, targetColor, duration)
+	pcall(function()
+		TweenService:Create(guiObject, TweenInfo.new(duration or 0.2), {[property] = targetColor}):Play()
+	end)
+end
+
 local function createUltimateGUI()
 	-- ScreenGui
 	local screenGui = Instance.new("ScreenGui")
@@ -1840,7 +1846,7 @@ local function createUltimateGUI()
 
 	runBackgroundLoop()
 
-	print("GUI ULTIME V19 CHARGEE !")
+	print("GUI ULTIME V24 CHARGEE !")
 end
 
 -- ============================================================
