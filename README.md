@@ -1,18 +1,18 @@
-# Roblox Elemental Dungeon Autofarm Pro V10
+# Roblox Elemental Dungeon Autofarm Pro V15
 
-Ce dépôt contient le script d'autofarm ultime et optimisé pour le jeu **Elemental Dungeon** sur Roblox.
+This repository contains the ultimate, highly-optimized autofarm script for the Roblox game **Elemental Dungeon**.
 
-## 🚀 Comment l'utiliser (Loadstring)
+## 🚀 How to Run (Loadstring)
 
-Pour exécuter le script, copiez-collez la ligne suivante dans votre exécuteur Roblox compatible :
+To execute the script, copy-paste the following line into your compatible Roblox exploit executor:
 
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/VOTRE_PSEUDO/VOTRE_DEPOT/main/elemental_dungeon.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/letruyenduc/elementaldungeon/refs/heads/main/elemental_dungeon.lua"))()
 ```
-*(N'oubliez pas de remplacer `VOTRE_PSEUDO` et `VOTRE_DEPOT` par vos propres informations après avoir poussé ce dépôt sur GitHub).*
 
-## 🌟 Fonctionnalités (Version V10)
-* **Système d'Onglets Premium** : Navigation fluide entre les modules d'automatisation, combat, téléportation, donjon et paramètres physiques.
-* **Équipement Intelligent** : Permutation automatique d'armes et d'outils magiques pour lancer vos compétences au combat.
-* **Sécurité Anti-Ban** : Déplacement à vitesse de Tween constante, Noclip permanent optionnel et randomisation des coordonnées de téléportation.
-* **Mode Nuit** : Option pour couper le rendu 3D de Roblox et soulager le processeur lors du farm de nuit.
+## 🌟 Key Features (Version V15)
+* **Official UI Layout** : Tabless, 3-column landscape design mimicking the in-game "Dungeon Creator" interface perfectly.
+* **FredokaOne Font** : Bold, clean, cartoonish typeface with thick black outlines for maximum visual fidelity.
+* **Intelligent Gear Swapping** : Automatically alternates weapons and spell elements to execute abilities during combat.
+* **Stepped Anchoring (Anti-Fall)** : Lock the character's relative position on frame updates to prevent falling due to gravity during fight loops.
+* **Night Mode** : Turn off client 3D rendering to drastically reduce CPU and GPU usage for overnight farming sessions.
