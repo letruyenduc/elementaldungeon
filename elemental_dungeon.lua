@@ -159,6 +159,7 @@ local CONFIG = {
 	AutoRetry = false,
 	AutoJoinDungeon = false,
 	HitboxExpander = true,
+	HitboxSize = 30,
 
 	-- Équipement intelligent
 	EquipMode = "Both",
@@ -320,6 +321,22 @@ function tweenToMob(mob)
 	tweenToPosition(targetPos)
 end
 
+local function restoreMobHitbox(mob)
+	pcall(function()
+		local hrp = mob:FindFirstChild("HumanoidRootPart") or mob:FindFirstChild("PrimaryPart")
+		if hrp and hrp:IsA("BasePart") then
+			local origSize = hrp:GetAttribute("OriginalSize")
+			local origCollide = hrp:GetAttribute("OriginalCanCollide")
+			local origTrans = hrp:GetAttribute("OriginalTransparency")
+			if origSize then
+				hrp.Size = origSize
+				hrp.CanCollide = origCollide
+				hrp.Transparency = origTrans
+			end
+		end
+	end)
+end
+
 local function expandMobHitbox(mob)
 	pcall(function()
 		local hrp = mob:FindFirstChild("HumanoidRootPart") or mob:FindFirstChild("PrimaryPart")
@@ -329,7 +346,8 @@ local function expandMobHitbox(mob)
 				hrp:SetAttribute("OriginalCanCollide", hrp.CanCollide)
 				hrp:SetAttribute("OriginalTransparency", hrp.Transparency)
 			end
-			hrp.Size = Vector3.new(30, 30, 30)
+			local sz = CONFIG.HitboxSize or 30
+			hrp.Size = Vector3.new(sz, sz, sz)
 			hrp.CanCollide = false
 			hrp.Transparency = 0.8
 		end
@@ -350,6 +368,8 @@ function getAliveMobs()
 					table.insert(mobs, mob)
 					if CONFIG.HitboxExpander then
 						expandMobHitbox(mob)
+					else
+						restoreMobHitbox(mob)
 					end
 				end
 			end
@@ -1525,6 +1545,9 @@ local function createUltimateGUI()
 	createToggleRow(pageCombat, "Auto Equip Gear", "rbxassetid://6035043132", "AutoEquip", 3)
 	createToggleRow(pageCombat, "Auto Health Healing", "rbxassetid://6034287517", "AutoHeal", 4)
 	createToggleRow(pageCombat, "Hitbox Expander", "rbxassetid://6034855071", "HitboxExpander", 4.5)
+	createSliderRow(pageCombat, "Hitbox Size (studs) :", "rbxassetid://6034855071", CONFIG.HitboxSize, 2, 100, 4.6, function(newVal)
+		CONFIG.HitboxSize = newVal
+	end)
 
 	createSectionHeader(pageCombat, "GEAR SELECTION", 5)
 	createDropdownRow(pageCombat, "Equip Mode :", "rbxassetid://6031289116", CONFIG.EquipMode, {"Both", "Weapon Only", "Element Only", "None"}, 6, function(newVal)
@@ -1890,7 +1913,7 @@ local function createUltimateGUI()
 
 	runBackgroundLoop()
 
-	print("GUI ULTIME V29 CHARGEE !")
+	print("GUI ULTIME V30 CHARGEE !")
 end
 
 -- ============================================================
