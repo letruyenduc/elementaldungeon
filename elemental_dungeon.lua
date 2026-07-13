@@ -158,6 +158,7 @@ local CONFIG = {
 	AutoSell = false,
 	AutoRetry = false,
 	AutoJoinDungeon = false,
+	HitboxExpander = true,
 
 	-- Équipement intelligent
 	EquipMode = "Both",
@@ -319,6 +320,22 @@ function tweenToMob(mob)
 	tweenToPosition(targetPos)
 end
 
+local function expandMobHitbox(mob)
+	pcall(function()
+		local hrp = mob:FindFirstChild("HumanoidRootPart") or mob:FindFirstChild("PrimaryPart")
+		if hrp and hrp:IsA("BasePart") then
+			if not hrp:GetAttribute("OriginalSize") then
+				hrp:SetAttribute("OriginalSize", hrp.Size)
+				hrp:SetAttribute("OriginalCanCollide", hrp.CanCollide)
+				hrp:SetAttribute("OriginalTransparency", hrp.Transparency)
+			end
+			hrp.Size = Vector3.new(30, 30, 30)
+			hrp.CanCollide = false
+			hrp.Transparency = 0.8
+		end
+	end)
+end
+
 function getAliveMobs()
 	local mobs = {}
 	local mobContainer = Workspace:FindFirstChild("Mobs")
@@ -331,6 +348,9 @@ function getAliveMobs()
 				local primaryPart = mob:FindFirstChild("HumanoidRootPart") or mob:FindFirstChild("PrimaryPart")
 				if primaryPart then
 					table.insert(mobs, mob)
+					if CONFIG.HitboxExpander then
+						expandMobHitbox(mob)
+					end
 				end
 			end
 		end
@@ -413,6 +433,10 @@ function swing()
 		if tool then
 			tool:Activate()
 		end
+		pcall(function()
+			VirtualUser:CaptureController()
+			VirtualUser:ClickButton1(Vector2.new(0, 0))
+		end)
 		if UseSword then
 			UseSword:InvokeServer()
 		end
@@ -1500,6 +1524,7 @@ local function createUltimateGUI()
 	createToggleRow(pageCombat, "Auto Attack Monsters", "rbxassetid://6035043132", "AutoAttack", 2)
 	createToggleRow(pageCombat, "Auto Equip Gear", "rbxassetid://6035043132", "AutoEquip", 3)
 	createToggleRow(pageCombat, "Auto Health Healing", "rbxassetid://6034287517", "AutoHeal", 4)
+	createToggleRow(pageCombat, "Hitbox Expander", "rbxassetid://6034855071", "HitboxExpander", 4.5)
 
 	createSectionHeader(pageCombat, "GEAR SELECTION", 5)
 	createDropdownRow(pageCombat, "Equip Mode :", "rbxassetid://6031289116", CONFIG.EquipMode, {"Both", "Weapon Only", "Element Only", "None"}, 6, function(newVal)
@@ -1865,7 +1890,7 @@ local function createUltimateGUI()
 
 	runBackgroundLoop()
 
-	print("GUI ULTIME V28 CHARGEE !")
+	print("GUI ULTIME V29 CHARGEE !")
 end
 
 -- ============================================================
