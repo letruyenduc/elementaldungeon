@@ -454,8 +454,15 @@ function swing()
 			tool:Activate()
 		end
 		pcall(function()
-			VirtualUser:CaptureController()
-			VirtualUser:ClickButton1(Vector2.new(0, 0))
+			local camera = Workspace.CurrentCamera
+			if camera then
+				local viewportSize = camera.ViewportSize
+				local center = Vector2.new(viewportSize.X / 2, viewportSize.Y / 2)
+				VirtualUser:CaptureController()
+				VirtualUser:Button1Down(center)
+				task.wait(0.02)
+				VirtualUser:Button1Up(center)
+			end
 		end)
 		if UseSword then
 			UseSword:InvokeServer()
@@ -1547,6 +1554,11 @@ local function createUltimateGUI()
 	createToggleRow(pageCombat, "Hitbox Expander", "rbxassetid://6034855071", "HitboxExpander", 4.5)
 	createSliderRow(pageCombat, "Hitbox Size (studs) :", "rbxassetid://6034855071", CONFIG.HitboxSize, 2, 100, 4.6, function(newVal)
 		CONFIG.HitboxSize = newVal
+		if CONFIG.HitboxExpander then
+			for _, mob in ipairs(getAliveMobs()) do
+				expandMobHitbox(mob)
+			end
+		end
 	end)
 
 	createSectionHeader(pageCombat, "GEAR SELECTION", 5)
@@ -1913,7 +1925,7 @@ local function createUltimateGUI()
 
 	runBackgroundLoop()
 
-	print("GUI ULTIME V30 CHARGEE !")
+	print("GUI ULTIME V31 CHARGEE !")
 end
 
 -- ============================================================
