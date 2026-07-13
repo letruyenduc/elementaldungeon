@@ -764,7 +764,7 @@ local function createUltimateGUI()
 	closeBtn.MouseLeave:Connect(function()
 		animateColor(closeBtn, "BackgroundColor3", colorRedWarning)
 	end)
-	closeBtn.MouseButton1Click:Connect(function()
+	closeBtn.Activated:Connect(function()
 		CONFIG.AutoFarm = false
 		pcall(function()
 			RunService:Set3dRenderingEnabled(true)
@@ -905,7 +905,7 @@ local function createUltimateGUI()
 		lbl.Name = "TextLabel"
 		lbl.Parent = btn
 
-		btn.MouseButton1Click:Connect(function()
+		btn.Activated:Connect(function()
 			selectTab(name)
 		end)
 
@@ -970,9 +970,9 @@ local function createUltimateGUI()
 		lblStroke.Parent = lbl
 		lbl.Parent = frame
 
-		btn.MouseButton1Click:Connect(function()
+		btn.Activated:Connect(function()
 			CONFIG[configKey] = not CONFIG[configKey]
-			animateColor(btn, "BackgroundColor3", CONFIG[configKey] and colorGreenActive or colorSlateSidebar)
+			btn.BackgroundColor3 = CONFIG[configKey] and colorGreenActive or colorSlateSidebar
 			icon.ImageColor3 = CONFIG[configKey] and colorGreenActive or colorTextInactive
 			btn.Text = CONFIG[configKey] and "✓" or ""
 		end)
@@ -1093,7 +1093,7 @@ local function createUltimateGUI()
 					optBtn.BackgroundTransparency = 1
 				end)
 
-				optBtn.MouseButton1Click:Connect(function()
+				optBtn.Activated:Connect(function()
 					btn.Text = tostring(option) .. "  ▼"
 					callback(option)
 					isOpened = false
@@ -1107,7 +1107,7 @@ local function createUltimateGUI()
 
 		rebuildDropdownItems(options)
 
-		btn.MouseButton1Click:Connect(function()
+		btn.Activated:Connect(function()
 			if label:find("Weapon") or label:find("Element") then
 				local updatedList = getAvailableTools()
 				rebuildDropdownItems(updatedList)
@@ -1383,7 +1383,7 @@ local function createUltimateGUI()
 		animateColor(mainToggleBtn, "BackgroundColor3", CONFIG.AutoFarm and colorRedWarning or colorGreenActive)
 	end)
 
-	mainToggleBtn.MouseButton1Click:Connect(function()
+	mainToggleBtn.Activated:Connect(function()
 		CONFIG.AutoFarm = not CONFIG.AutoFarm
 		if CONFIG.AutoFarm then
 			mainToggleBtn.Text = "STOP AUTOFARM [F6]"
@@ -1518,7 +1518,7 @@ local function createUltimateGUI()
 			strokeS.Color = colorBorderDark
 			strokeS.Parent = btn
 
-			btn.MouseButton1Click:Connect(function()
+			btn.Activated:Connect(function()
 				local idx = table.find(CONFIG.SelectedSkillsElement, slot)
 				if idx then
 					table.remove(CONFIG.SelectedSkillsElement, idx)
@@ -1583,7 +1583,7 @@ local function createUltimateGUI()
 			strokeS.Color = colorBorderDark
 			strokeS.Parent = btn
 
-			btn.MouseButton1Click:Connect(function()
+			btn.Activated:Connect(function()
 				local idx = table.find(CONFIG.SelectedSkillsSword, slot)
 				if idx then
 					table.remove(CONFIG.SelectedSkillsSword, idx)
@@ -1715,14 +1715,6 @@ local function createUltimateGUI()
 	optiStroke.Thickness = 2
 	optiStroke.Color = colorBorderDark
 	optiStroke.Parent = optiBtn
-
-	local optiGrad = Instance.new("UIGradient")
-	optiGrad.Rotation = 90
-	optiGrad.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 180, 180))
-	})
-	optiGrad.Parent = optiBtn
 	optiBtn.Parent = optiFrame
 
 	local optiLbl = Instance.new("TextLabel")
@@ -1741,9 +1733,9 @@ local function createUltimateGUI()
 	optiLblStroke.Parent = optiLbl
 	optiLbl.Parent = optiFrame
 
-	optiBtn.MouseButton1Click:Connect(function()
+	optiBtn.Activated:Connect(function()
 		CONFIG.Disable3DRendering = not CONFIG.Disable3DRendering
-		animateColor(optiBtn, "BackgroundColor3", CONFIG.Disable3DRendering and colorBlueSelect or colorSlateSidebar)
+		optiBtn.BackgroundColor3 = CONFIG.Disable3DRendering and colorBlueSelect or colorSlateSidebar
 		optiBtn.Text = CONFIG.Disable3DRendering and "✓" or ""
 		pcall(function()
 			RunService:Set3dRenderingEnabled(not CONFIG.Disable3DRendering)
