@@ -234,10 +234,10 @@ local function scanKnitRemotes()
 	logMessage("--- SCANNING COMBAT SERVICES ---")
 	pcall(function()
 		local replicated = game:GetService("ReplicatedStorage")
-		local knit = replicated:FindFirstChild("ReplicatedStorage")
-			and replicated.ReplicatedStorage:FindFirstChild("Packages")
-			and replicated.ReplicatedStorage.Packages:FindFirstChild("Knit")
-			and replicated.ReplicatedStorage.Packages.Knit:FindFirstChild("Services")
+		local rFolder = replicated:FindFirstChild("ReplicatedStorage")
+		local packages = rFolder and rFolder:FindFirstChild("Packages")
+		local knitPkg = packages and packages:FindFirstChild("Knit")
+		local knit = knitPkg and knitPkg:FindFirstChild("Services")
 			
 		if knit then
 			for _, service in ipairs(knit:GetChildren()) do
@@ -2100,6 +2100,38 @@ local function createUltimateGUI()
 		
 		copyBtn.Activated:Connect(function()
 			local content = table.concat(STATS.LogHistory, "\n")
+			
+			-- Annexer un scan Knit en direct pour diagnostic
+			local knitReport = "\n\n=== DIRECT KNIT SERVICES SCAN ===\n"
+			pcall(function()
+				local replicated = game:GetService("ReplicatedStorage")
+				local rFolder = replicated:FindFirstChild("ReplicatedStorage")
+				local packages = rFolder and rFolder:FindFirstChild("Packages")
+				local knitPkg = packages and packages:FindFirstChild("Knit")
+				local knit = knitPkg and knitPkg:FindFirstChild("Services")
+				if knit then
+					for _, s in ipairs(knit:GetChildren()) do
+						knitReport = knitReport .. "Service: " .. s.Name .. "\n"
+						local rf = s:FindFirstChild("RF")
+						if rf then
+							for _, r in ipairs(rf:GetChildren()) do
+								knitReport = knitReport .. "  -> RF: " .. r.Name .. "\n"
+							end
+						end
+						local re = s:FindFirstChild("RE")
+						if re then
+							for _, r in ipairs(re:GetChildren()) do
+								knitReport = knitReport .. "  -> RE: " .. r.Name .. "\n"
+							end
+						end
+					end
+				else
+					knitReport = knitReport .. "Knit Services folder not found in ReplicatedStorage.\n"
+				end
+			end)
+			knitReport = knitReport .. "================================="
+			content = content .. knitReport
+			
 			local copyFn = setclipboard or toclipboard or (Clipboard and Clipboard.set)
 			if copyFn then
 				pcall(function() copyFn(content) end)
@@ -2169,7 +2201,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V43 CHARGEE !")
+	print("GUI ULTIME V44 CHARGEE !")
 end
 
 -- ============================================================
