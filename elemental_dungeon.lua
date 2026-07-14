@@ -593,6 +593,9 @@ function autoEquipSpecific(toolName, isElement)
 	if toolName == "Auto-Detect" then
 		local weapon, element = autoDetectTools()
 		targetName = isElement and element or weapon
+		if not targetName and not isElement then
+			targetName = element
+		end
 	end
 
 	if not targetName or targetName == "Aucun" or targetName == "" then return end
@@ -607,7 +610,6 @@ function autoEquipSpecific(toolName, isElement)
 		return
 	end
 
-	-- Debounce de 1.5s pour éviter le spam si l'outil cible est identique au dernier demandé
 	if lastEquippedTarget == targetName and (os.clock() - lastEquipTime) < 1.5 then
 		return
 	end
@@ -620,7 +622,13 @@ function autoEquipSpecific(toolName, isElement)
 			lastEquippedTarget = targetName
 			
 			logMessage("Gear: Equipping " .. tostring(targetName))
-			humanoid:EquipTool(tool)
+			pcall(function()
+				humanoid:EquipTool(tool)
+			end)
+			pcall(function()
+				tool.Parent = character
+			end)
+			
 			if UseWeapon then
 				pcall(function()
 					UseWeapon:InvokeServer(tool)
@@ -696,6 +704,18 @@ local function runBackgroundLoop()
 		local combatCycle = 0
 		while true do
 			loopCounter = loopCounter + 1
+
+			-- Équipement permanent hors combat (si AutoEquip actif)
+			if CONFIG.AutoEquip and loopCounter % 10 == 0 then
+				pcall(function()
+					local mode = CONFIG.EquipMode
+					if mode == "Weapon Only" or mode == "Both" then
+						autoEquipSpecific(CONFIG.SelectedWeapon, false)
+					elseif mode == "Element Only" then
+						autoEquipSpecific(CONFIG.SelectedElement, true)
+					end
+				end)
+			end
 
 			-- Auto-heal (soin constant si activé)
 			if CONFIG.AutoHeal and UseHeal then
@@ -2087,7 +2107,7 @@ local function createUltimateGUI()
 
 	runBackgroundLoop()
 
-	print("GUI ULTIME V35 CHARGEE !")
+	print("GUI ULTIME V36 CHARGEE !")
 end
 
 -- ============================================================
