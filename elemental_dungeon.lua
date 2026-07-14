@@ -230,6 +230,40 @@ local function logMessage(text)
 	end
 end
 
+local function scanKnitRemotes()
+	logMessage("--- SCANNING COMBAT SERVICES ---")
+	pcall(function()
+		local replicated = game:GetService("ReplicatedStorage")
+		local knit = replicated:FindFirstChild("ReplicatedStorage")
+			and replicated.ReplicatedStorage:FindFirstChild("Packages")
+			and replicated.ReplicatedStorage.Packages:FindFirstChild("Knit")
+			and replicated.ReplicatedStorage.Packages.Knit:FindFirstChild("Services")
+			
+		if knit then
+			for _, service in ipairs(knit:GetChildren()) do
+				if service.Name:find("Attack") or service.Name:find("Weapon") or service.Name:find("Skill") or service.Name:find("Ability") then
+					logMessage("Service: " .. service.Name)
+					local rf = service:FindFirstChild("RF")
+					if rf then
+						for _, r in ipairs(rf:GetChildren()) do
+							logMessage("  -> RF: " .. r.Name)
+						end
+					end
+					local re = service:FindFirstChild("RE")
+					if re then
+						for _, r in ipairs(re:GetChildren()) do
+							logMessage("  -> RE: " .. r.Name)
+						end
+					end
+				end
+			end
+		else
+			logMessage("Knit Services folder not found in ReplicatedStorage.")
+		end
+	end)
+	logMessage("--------------------------------")
+end
+
 -- ============================================================
 -- 9. FONCTIONS DE L'AUTOFARM
 -- ============================================================
@@ -474,7 +508,7 @@ function getClosestMob()
 	return currentTarget
 end
 
-function swing()
+function swing(target)
 	logMessage("Combat: Swing Weapon (Activate + Clic)")
 	pcall(function()
 		local character = LocalPlayer.Character
@@ -492,7 +526,6 @@ function swing()
 		
 		-- 1. Simulation via l'injecteur (OS level click aux coordonnées de sécurité)
 		if mouse1click then
-			-- Si l'exécuteur supporte le clic aux coordonnées (ex: Delta, Fluxus, etc.)
 			pcall(function()
 				if click_mouse or mouseclick then
 					local clickFn = click_mouse or mouseclick
@@ -517,10 +550,18 @@ function swing()
 			VirtualUser:Button1Up(safeClickPos)
 		end)
 
-		-- 3. Appel direct de la remote Knit
+		-- 3. Appel direct de la remote Knit avec différents formats d'arguments cibles
 		if UseSword then
 			pcall(function()
 				UseSword:InvokeServer()
+				if target then
+					UseSword:InvokeServer(target)
+					local targetPart = target:FindFirstChild("HumanoidRootPart") or target:FindFirstChild("PrimaryPart")
+					if targetPart then
+						UseSword:InvokeServer(targetPart)
+						UseSword:InvokeServer(targetPart.Position)
+					end
+				end
 			end)
 		end
 	end)
@@ -781,7 +822,7 @@ local function runBackgroundLoop()
 								-- Tour Épée
 								autoEquipSpecific(CONFIG.SelectedWeapon, false)
 								if CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Sword Only" then
-									swing()
+									swing(target)
 								end
 								-- Auto cast sorts d'épées pendant le tour de l'épée
 								if CONFIG.AutoSkillsSword and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
@@ -793,7 +834,7 @@ local function runBackgroundLoop()
 								-- Tour Sorts Élémentaires
 								autoEquipSpecific(CONFIG.SelectedElement, true)
 								if CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Sword Only" then
-									swing()
+									swing(target)
 								end
 								if CONFIG.AutoSkillsElement and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
 									for _, slot in ipairs(CONFIG.SelectedSkillsElement) do
@@ -806,7 +847,7 @@ local function runBackgroundLoop()
 							if mode == "Weapon Only" then
 								autoEquipSpecific(CONFIG.SelectedWeapon, false)
 								if CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Sword Only" then
-									swing()
+									swing(target)
 								end
 								if CONFIG.AutoSkillsSword and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
 									for _, slot in ipairs(CONFIG.SelectedSkillsSword) do
@@ -816,7 +857,7 @@ local function runBackgroundLoop()
 							elseif mode == "Element Only" then
 								autoEquipSpecific(CONFIG.SelectedElement, true)
 								if CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Sword Only" then
-									swing()
+									swing(target)
 								end
 								if CONFIG.AutoSkillsElement and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
 									for _, slot in ipairs(CONFIG.SelectedSkillsElement) do
@@ -826,7 +867,7 @@ local function runBackgroundLoop()
 							else
 								-- Mode None : lance les deux selon activation
 								if CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Sword Only" then
-									swing()
+									swing(target)
 								end
 								if CONFIG.AutoSkillsSword and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
 									for _, slot in ipairs(CONFIG.SelectedSkillsSword) do
@@ -2125,9 +2166,10 @@ local function createUltimateGUI()
 		end
 	end)
 
+	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V42 CHARGEE !")
+	print("GUI ULTIME V43 CHARGEE !")
 end
 
 -- ============================================================
