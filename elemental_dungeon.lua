@@ -768,14 +768,20 @@ local function runBackgroundLoop()
 				task.spawn(autoSell)
 			end
 
-			-- Relancement de donjon (uniquement si autofarm actif)
-			if CONFIG.AutoFarm and CONFIG.AutoRetry and loopCounter % 12 == 0 then
+			-- Relancement de donjon / Vote retry (uniquement si autofarm actif et aucun monstre)
+			if CONFIG.AutoFarm and loopCounter % 12 == 0 then
 				local mobs = getAliveMobs()
 				if #mobs == 0 then
 					activeTarget = nil
-					retry()
-					task.wait(1.5)
-					if #getAliveMobs() == 0 and CONFIG.AutoJoinDungeon then
+					
+					-- 1. Vote Retry si configuré
+					if CONFIG.AutoRetry then
+						retry()
+						task.wait(1.5)
+					end
+					
+					-- 2. Création/Rejoindre le donjon si toujours aucun mob
+					if CONFIG.AutoJoinDungeon and #getAliveMobs() == 0 then
 						task.wait(CONFIG.RetryDelay)
 						createDungeon(CONFIG.DungeonName, CONFIG.Difficulty)
 						task.wait(2.5)
@@ -1939,7 +1945,7 @@ local function createUltimateGUI()
 
 	runBackgroundLoop()
 
-	print("GUI ULTIME V32 CHARGEE !")
+	print("GUI ULTIME V33 CHARGEE !")
 end
 
 -- ============================================================
