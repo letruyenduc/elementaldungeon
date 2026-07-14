@@ -236,6 +236,7 @@ local CONFIG = {
 	SellRare = false,
 	
 	-- Safety & Physics & Rendering
+	TravelMode = "Tween",
 	TweenSpeed = 60,
 	NoclipPermanent = false,
 	WalkSpeed = 16,
@@ -403,7 +404,15 @@ function tweenToMob(mob)
 	local mobPart = mob:FindFirstChild("HumanoidRootPart") or mob:FindFirstChild("PrimaryPart")
 	if not mobPart then return end
 	local targetPos = getPositionOffset(mobPart)
-	tweenToPosition(targetPos)
+	if CONFIG.TravelMode == "Teleport" then
+		local character = LocalPlayer.Character
+		local hrp = character and character:FindFirstChild("HumanoidRootPart")
+		if hrp then
+			hrp.CFrame = CFrame.new(targetPos)
+		end
+	else
+		tweenToPosition(targetPos)
+	end
 end
 
 local function restoreMobHitbox(mob)
@@ -1960,6 +1969,10 @@ local function createUltimateGUI()
 		if val and val >= 10 and val <= 250 then CONFIG.TweenSpeed = val else box.Text = tostring(CONFIG.TweenSpeed) end
 	end)
 
+	createDropdownRow(pageTP, "Travel Mode :", "rbxassetid://6034855071", CONFIG.TravelMode, {"Tween", "Teleport"}, 5.5, function(newVal)
+		CONFIG.TravelMode = newVal
+	end)
+
 	createSectionHeader(pageTP, "SAFETY", 6)
 	createToggleRow(pageTP, "Randomize Movement", "rbxassetid://6031768426", "RandomizeOffset", 7)
 	createInputRow(pageTP, "Random Offset range :", "rbxassetid://6031768426", CONFIG.RandomOffsetRange, 8, function(box, text)
@@ -2269,7 +2282,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V53 CHARGEE !")
+	print("GUI ULTIME V54 CHARGEE !")
 end
 
 -- ============================================================
