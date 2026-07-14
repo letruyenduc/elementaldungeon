@@ -333,6 +333,10 @@ local function restoreMobHitbox(mob)
 				hrp.CanCollide = origCollide
 				hrp.Transparency = origTrans
 			end
+			local box = hrp:FindFirstChild("HitboxVisual")
+			if box then
+				box:Destroy()
+			end
 		end
 	end)
 end
@@ -350,6 +354,16 @@ local function expandMobHitbox(mob)
 			hrp.Size = Vector3.new(sz, sz, sz)
 			hrp.CanCollide = false
 			hrp.Transparency = 0.8
+			
+			local box = hrp:FindFirstChild("HitboxVisual")
+			if not box then
+				box = Instance.new("SelectionBox")
+				box.Name = "HitboxVisual"
+				box.Color3 = Color3.fromRGB(255, 0, 100)
+				box.LineThickness = 0.05
+				box.Adornee = hrp
+				box.Parent = hrp
+			end
 		end
 	end)
 end
@@ -1925,7 +1939,7 @@ local function createUltimateGUI()
 
 	runBackgroundLoop()
 
-	print("GUI ULTIME V31 CHARGEE !")
+	print("GUI ULTIME V32 CHARGEE !")
 end
 
 -- ============================================================
