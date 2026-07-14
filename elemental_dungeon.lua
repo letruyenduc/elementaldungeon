@@ -481,15 +481,25 @@ function tweenToMob(mob)
 	local mobPart = mob:FindFirstChild("HumanoidRootPart") or mob:FindFirstChild("PrimaryPart")
 	if not mobPart then return end
 	local targetPos = getPositionOffset(mobPart)
+	
+	isTweening = true
+	task.wait(0.01) -- Laisser le temps à Stepped de désancrer
+	
 	if CONFIG.TravelMode == "Teleport" then
 		local character = LocalPlayer.Character
 		local hrp = character and character:FindFirstChild("HumanoidRootPart")
 		if hrp then
 			hrp.CFrame = CFrame.new(targetPos)
+			if farmPlatform then
+				farmPlatform.CFrame = CFrame.new(targetPos - Vector3.new(0, 2.5, 0))
+			end
 		end
+		task.wait(0.02) -- Laisser une frame au moteur Roblox
 	else
 		tweenToPosition(targetPos)
 	end
+	
+	isTweening = false
 end
 
 local function restoreMobHitbox(mob)
@@ -2401,7 +2411,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V59 CHARGEE !")
+	print("GUI ULTIME V60 CHARGEE !")
 end
 
 -- ============================================================
