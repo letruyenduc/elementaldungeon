@@ -112,7 +112,7 @@ local function scanDifficulties()
 		end
 	end)
 	if #list == 0 then
-		list = { "Easy", "Medium", "Hard", "Hell" }
+		list = { "Easy", "Medium", "Hard", "Hell", "Nightmare", "Mythic" }
 	end
 	table.sort(list)
 	return list
@@ -607,7 +607,9 @@ local DIFFICULTY_MAP = {
 	["Easy"] = "Easy",
 	["Medium"] = "Normal",
 	["Hard"] = "Hard",
-	["Hell"] = "Hell"
+	["Hell"] = "Hell",
+	["Nightmare"] = "Nightmare",
+	["Mythic"] = "Mythic"
 }
 
 function createDungeon(name, difficulty)
@@ -2227,7 +2229,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V46 CHARGEE !")
+	print("GUI ULTIME V47 CHARGEE !")
 end
 
 -- ============================================================
