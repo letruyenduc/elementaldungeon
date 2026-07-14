@@ -1454,16 +1454,20 @@ local function createUltimateGUI()
 
 		frame.Parent = parent
 
-		function frame:SetOptions(newOptions)
+		local controller = {
+			Frame = frame
+		}
+
+		function controller:SetOptions(newOptions)
 			options = newOptions
 			rebuildDropdownItems(newOptions)
 		end
 
-		function frame:SetValue(value)
+		function controller:SetValue(value)
 			btn.Text = tostring(value) .. "  ▼"
 		end
 
-		return frame
+		return controller
 	end
 
 	local function createSliderRow(parent, label, iconId, initialValue, min, max, layoutOrder, callback)
@@ -2286,7 +2290,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V50 CHARGEE !")
+	print("GUI ULTIME V51 CHARGEE !")
 end
 
 -- ============================================================
