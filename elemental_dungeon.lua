@@ -214,7 +214,22 @@ local STATS = {
 	LootCollected = 0,
 	ItemsSold = 0,
 	StartTime = os.time(),
+	LogHistory = {},
 }
+
+local onLogAdded = nil
+local function logMessage(text)
+	local timeStr = os.date("%H:%M:%S")
+	local formatted = string.format("[%s] %s", timeStr, text)
+	table.insert(STATS.LogHistory, formatted)
+	if #STATS.LogHistory > 100 then
+		table.remove(STATS.LogHistory, 1)
+	end
+	print(formatted)
+	if onLogAdded then
+		pcall(onLogAdded)
+	end
+end
 
 -- ============================================================
 -- 9. FONCTIONS DE L'AUTOFARM
@@ -461,6 +476,7 @@ function getClosestMob()
 end
 
 function swing()
+	logMessage("Combat: Swing Weapon (Activate + Clic)")
 	pcall(function()
 		local character = LocalPlayer.Character
 		local tool = character and character:FindFirstChildOfClass("Tool")
@@ -503,6 +519,7 @@ end
 
 function useSkill(slot)
 	if UseAbility then
+		logMessage("Skill Cast: Slot " .. tostring(slot))
 		pcall(function()
 			UseAbility:InvokeServer(slot)
 		end)
@@ -519,6 +536,7 @@ local DIFFICULTY_MAP = {
 
 function createDungeon(name, difficulty)
 	local remoteDiff = DIFFICULTY_MAP[difficulty] or "Easy"
+	logMessage("Dungeon Create: " .. tostring(name) .. " [" .. tostring(remoteDiff) .. "]")
 	pcall(function()
 		StartDungeon:InvokeServer(name, remoteDiff)
 	end)
@@ -526,6 +544,7 @@ end
 
 function retry()
 	if VoteOn then
+		logMessage("Dungeon Vote: Retry")
 		pcall(function()
 			VoteOn:InvokeServer("Retry")
 		end)
@@ -534,6 +553,7 @@ end
 
 function collectDrop(drop)
 	if CollectDrop then
+		logMessage("Collect Drop: " .. tostring(drop.Name))
 		pcall(function()
 			CollectDrop:InvokeServer(drop)
 		end)
@@ -599,6 +619,7 @@ function autoEquipSpecific(toolName, isElement)
 			lastEquipTime = os.clock()
 			lastEquippedTarget = targetName
 			
+			logMessage("Gear: Equipping " .. tostring(targetName))
 			humanoid:EquipTool(tool)
 			if UseWeapon then
 				pcall(function()
@@ -995,6 +1016,7 @@ local function createUltimateGUI()
 	local pageTP = createTabPage("TP")
 	local pageDungeon = createTabPage("Dungeon")
 	local pageSystem = createTabPage("System")
+	local pageLogs = createTabPage("Logs")
 
 	local function selectTab(tabName)
 		for name, page in pairs(pages) do
@@ -1066,6 +1088,7 @@ local function createUltimateGUI()
 	createTabButton("TP", "rbxassetid://6034855071", "Movement", 3)
 	createTabButton("Dungeon", "rbxassetid://6034287517", "Dungeon", 4)
 	createTabButton("System", "rbxassetid://6031289116", "System", 5)
+	createTabButton("Logs", "rbxassetid://6035043132", "Logs", 6)
 
 	-- ============================================
 	-- HELPER WIDGETS
@@ -1915,6 +1938,108 @@ local function createUltimateGUI()
 		print("SYSTEM TAB ERROR: " .. tostring(systemErr))
 	end
 	
+	-- 6. LOGS TAB
+	local logsSuccess, logsErr = pcall(function()
+		createSectionHeader(pageLogs, "EXECUTION DIAGNOSTICS", 1)
+		
+		local copyFrame = Instance.new("Frame")
+		copyFrame.Size = UDim2.new(1, 0, 0, 36)
+		copyFrame.BackgroundTransparency = 1
+		copyFrame.LayoutOrder = 2
+		
+		local copyBtn = Instance.new("TextButton")
+		copyBtn.Size = UDim2.new(1, 0, 1, 0)
+		copyBtn.BackgroundColor3 = colorBlueSelect
+		copyBtn.Text = "COPY ALL LOGS (1-CLICK)"
+		copyBtn.TextColor3 = colorTextWhite
+		copyBtn.TextSize = 12
+		copyBtn.Font = Enum.Font.FredokaOne
+		
+		local copyCorner = Instance.new("UICorner")
+		copyCorner.CornerRadius = UDim.new(0, 8)
+		copyCorner.Parent = copyBtn
+		
+		local copyStroke = Instance.new("UIStroke")
+		copyStroke.Thickness = 2
+		copyStroke.Color = colorBorderDark
+		copyStroke.Parent = copyBtn
+		copyBtn.Parent = copyFrame
+		copyFrame.Parent = pageLogs
+
+		createSectionHeader(pageLogs, "LIVE EVENTS CONSOLE", 3)
+		
+		local consoleFrame = Instance.new("Frame")
+		consoleFrame.Size = UDim2.new(1, 0, 0, 220)
+		consoleFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+		consoleFrame.BorderSizePixel = 0
+		consoleFrame.LayoutOrder = 4
+		
+		local consoleCorner = Instance.new("UICorner")
+		consoleCorner.CornerRadius = UDim.new(0, 8)
+		consoleCorner.Parent = consoleFrame
+		
+		local consoleStroke = Instance.new("UIStroke")
+		consoleStroke.Thickness = 2
+		consoleStroke.Color = colorBorderDark
+		consoleStroke.Parent = consoleFrame
+		
+		local consoleScroll = Instance.new("ScrollingFrame")
+		consoleScroll.Size = UDim2.new(1, -12, 1, -12)
+		consoleScroll.Position = UDim2.new(0, 6, 0, 6)
+		consoleScroll.BackgroundTransparency = 1
+		consoleScroll.ScrollBarThickness = 5
+		consoleScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+		consoleScroll.Parent = consoleFrame
+		
+		local logText = Instance.new("TextLabel")
+		logText.Size = UDim2.new(1, 0, 1, 0)
+		logText.BackgroundTransparency = 1
+		logText.TextXAlignment = Enum.TextXAlignment.Left
+		logText.TextYAlignment = Enum.TextYAlignment.Top
+		logText.TextColor3 = Color3.fromRGB(220, 220, 240)
+		logText.TextSize = 10
+		logText.Font = Enum.Font.Code
+		logText.TextWrapped = true
+		logText.Text = "Logs console initialized.\n"
+		logText.Parent = consoleScroll
+		
+		consoleFrame.Parent = pageLogs
+		
+		local function refreshLogUI()
+			local content = table.concat(STATS.LogHistory, "\n")
+			logText.Text = content
+			local lines = #STATS.LogHistory
+			consoleScroll.CanvasSize = UDim2.new(0, 0, 0, lines * 13 + 20)
+			pcall(function()
+				consoleScroll.CanvasPosition = Vector2.new(0, math.max(0, consoleScroll.CanvasSize.Y.Offset - consoleScroll.AbsoluteSize.Y))
+			end)
+		end
+		
+		onLogAdded = refreshLogUI
+		
+		copyBtn.Activated:Connect(function()
+			local content = table.concat(STATS.LogHistory, "\n")
+			local copyFn = setclipboard or toclipboard or (Clipboard and Clipboard.set)
+			if copyFn then
+				pcall(function() copyFn(content) end)
+				copyBtn.Text = "COPIED TO CLIPBOARD!"
+				copyBtn.BackgroundColor3 = colorGreenActive
+				task.wait(1.5)
+				copyBtn.Text = "COPY ALL LOGS (1-CLICK)"
+				copyBtn.BackgroundColor3 = colorBlueSelect
+			else
+				copyBtn.Text = "COPY ERROR (NOT SUPPORTED)"
+				task.wait(1.5)
+				copyBtn.Text = "COPY ALL LOGS (1-CLICK)"
+			end
+		end)
+		
+		refreshLogUI()
+	end)
+	if not logsSuccess then
+		print("LOGS TAB ERROR: " .. tostring(logsErr))
+	end
+	
 	-- ============================================
 	-- INITIALISATION ET MISE A JOUR
 	-- ============================================
@@ -1962,7 +2087,7 @@ local function createUltimateGUI()
 
 	runBackgroundLoop()
 
-	print("GUI ULTIME V34 CHARGEE !")
+	print("GUI ULTIME V35 CHARGEE !")
 end
 
 -- ============================================================
