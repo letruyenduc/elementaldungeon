@@ -465,8 +465,21 @@ function swing()
 		local character = LocalPlayer.Character
 		local tool = character and character:FindFirstChildOfClass("Tool")
 		if tool then
-			tool:Activate()
+			pcall(function() tool:Activate() end)
 		end
+		
+		-- 1. Simulation via l'injecteur (OS level click)
+		if mouse1click then
+			pcall(mouse1click)
+		elseif mouse1press and mouse1release then
+			pcall(function()
+				mouse1press()
+				task.wait(0.02)
+				mouse1release()
+			end)
+		end
+
+		-- 2. Simulation via Roblox Engine (VirtualUser)
 		pcall(function()
 			local camera = Workspace.CurrentCamera
 			if camera then
@@ -478,8 +491,12 @@ function swing()
 				VirtualUser:Button1Up(center)
 			end
 		end)
+
+		-- 3. Appel direct de la remote Knit
 		if UseSword then
-			UseSword:InvokeServer()
+			pcall(function()
+				UseSword:InvokeServer()
+			end)
 		end
 	end)
 end
@@ -1945,7 +1962,7 @@ local function createUltimateGUI()
 
 	runBackgroundLoop()
 
-	print("GUI ULTIME V33 CHARGEE !")
+	print("GUI ULTIME V34 CHARGEE !")
 end
 
 -- ============================================================
