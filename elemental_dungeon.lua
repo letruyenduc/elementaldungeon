@@ -516,8 +516,15 @@ function swing()
 	end)
 end
 
+local lastSkillCastTime = {}
 function useSkill(slot)
 	if UseAbility then
+		local now = os.clock()
+		local lastCast = lastSkillCastTime[slot] or 0
+		if (now - lastCast) < 2.5 then
+			return
+		end
+		lastSkillCastTime[slot] = now
 		logMessage("Skill Cast: Slot " .. tostring(slot))
 		pcall(function()
 			UseAbility:InvokeServer(slot)
@@ -2110,7 +2117,7 @@ local function createUltimateGUI()
 
 	runBackgroundLoop()
 
-	print("GUI ULTIME V40 CHARGEE !")
+	print("GUI ULTIME V41 CHARGEE !")
 end
 
 -- ============================================================
