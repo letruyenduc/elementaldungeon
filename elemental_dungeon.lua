@@ -312,11 +312,22 @@ local isTweening = false
 local monitoredMobs = {}
 local activeTarget = nil
 
+-- Création de la plateforme locale de support
+local farmPlatform = Instance.new("Part")
+farmPlatform.Name = "FarmPlatform"
+farmPlatform.Size = Vector3.new(8, 1, 8)
+farmPlatform.Anchored = true
+farmPlatform.CanCollide = true
+farmPlatform.Transparency = 1
+farmPlatform.Parent = Workspace
+
 RunService.Stepped:Connect(function()
 	local character = LocalPlayer.Character
 	local hrp = character and character:FindFirstChild("HumanoidRootPart")
 
-	if (isTweening or CONFIG.NoclipPermanent or (CONFIG.AutoFarm and activeTarget)) and character then
+	-- Noclip seulement pendant le déplacement (isTweening) ou si activé de manière permanente
+	local shouldNoclip = isTweening or CONFIG.NoclipPermanent
+	if shouldNoclip and character then
 		for _, part in ipairs(character:GetDescendants()) do
 			if part:IsA("BasePart") and part.CanCollide then
 				part.CanCollide = false
@@ -324,13 +335,26 @@ RunService.Stepped:Connect(function()
 		end
 	end
 
-	-- Forcer la position à l'offset configuré par rapport au monstre pour empêcher la chute
-	if CONFIG.AutoFarm and activeTarget and activeTarget.Parent and hrp and not isTweening then
+	-- Gérer la plateforme locale pour l'autofarm
+	if CONFIG.AutoFarm and activeTarget and activeTarget.Parent and hrp then
 		local mobPart = activeTarget:FindFirstChild("HumanoidRootPart") or activeTarget:FindFirstChild("PrimaryPart")
 		if mobPart then
 			local targetPos = getPositionOffset(mobPart)
-			hrp.CFrame = CFrame.new(targetPos)
+			-- Positionner la plateforme de support à 2.5 studs sous la position cible
+			farmPlatform.CFrame = CFrame.new(targetPos - Vector3.new(0, 2.5, 0))
+			farmPlatform.CanCollide = not shouldNoclip
+			
+			-- Si le personnage est trop éloigné de sa plateforme, on le repositionne dessus
+			if not isTweening and (hrp.Position - targetPos).Magnitude > 6 then
+				hrp.CFrame = CFrame.new(targetPos)
+			end
+		else
+			farmPlatform.CanCollide = false
+			farmPlatform.CFrame = CFrame.new(0, -9999, 0)
 		end
+	else
+		farmPlatform.CanCollide = false
+		farmPlatform.CFrame = CFrame.new(0, -9999, 0)
 	end
 end)
 
@@ -2326,7 +2350,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V55 CHARGEE !")
+	print("GUI ULTIME V56 CHARGEE !")
 end
 
 -- ============================================================
