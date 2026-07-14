@@ -340,13 +340,24 @@ RunService.Stepped:Connect(function()
 		local mobPart = activeTarget:FindFirstChild("HumanoidRootPart") or activeTarget:FindFirstChild("PrimaryPart")
 		if mobPart then
 			local targetPos = getPositionOffset(mobPart)
-			-- Positionner la plateforme de support à 2.5 studs sous la position cible
-			farmPlatform.CFrame = CFrame.new(targetPos - Vector3.new(0, 2.5, 0))
 			farmPlatform.CanCollide = not shouldNoclip
 			
-			-- Si le personnage est trop éloigné de sa plateforme, on le repositionne dessus
-			if not isTweening and (hrp.Position - targetPos).Magnitude > 6 then
-				hrp.CFrame = CFrame.new(targetPos)
+			if CONFIG.TravelMode == "Teleport" then
+				-- La plateforme reste collée sous le joueur
+				farmPlatform.CFrame = CFrame.new(hrp.Position - Vector3.new(0, 2.5, 0))
+				
+				-- Téléportation à la demande uniquement si le monstre sort de notre portée d'attaque
+				local distToMob = (hrp.Position - mobPart.Position).Magnitude
+				if distToMob > (CONFIG.MaxAttackDistance - 2) then
+					hrp.CFrame = CFrame.new(targetPos)
+					farmPlatform.CFrame = CFrame.new(targetPos - Vector3.new(0, 2.5, 0))
+				end
+			else
+				-- Mode Tween classique : la plateforme suit la destination du Tween
+				farmPlatform.CFrame = CFrame.new(targetPos - Vector3.new(0, 2.5, 0))
+				if not isTweening and (hrp.Position - targetPos).Magnitude > 6 then
+					hrp.CFrame = CFrame.new(targetPos)
+				end
 			end
 		else
 			farmPlatform.CanCollide = false
@@ -2350,7 +2361,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V56 CHARGEE !")
+	print("GUI ULTIME V57 CHARGEE !")
 end
 
 -- ============================================================
