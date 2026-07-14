@@ -483,9 +483,24 @@ function swing()
 			pcall(function() tool:Activate() end)
 		end
 		
-		-- 1. Simulation via l'injecteur (OS level click)
+		local camera = Workspace.CurrentCamera
+		local safeClickPos = Vector2.new(100, 100) -- Fallback
+		if camera then
+			local viewportSize = camera.ViewportSize
+			safeClickPos = Vector2.new(viewportSize.X * 0.15, viewportSize.Y * 0.5)
+		end
+		
+		-- 1. Simulation via l'injecteur (OS level click aux coordonnées de sécurité)
 		if mouse1click then
-			pcall(mouse1click)
+			-- Si l'exécuteur supporte le clic aux coordonnées (ex: Delta, Fluxus, etc.)
+			pcall(function()
+				if click_mouse or mouseclick then
+					local clickFn = click_mouse or mouseclick
+					clickFn(safeClickPos.X, safeClickPos.Y)
+				else
+					mouse1click()
+				end
+			end)
 		elseif mouse1press and mouse1release then
 			pcall(function()
 				mouse1press()
@@ -496,15 +511,10 @@ function swing()
 
 		-- 2. Simulation via Roblox Engine (VirtualUser)
 		pcall(function()
-			local camera = Workspace.CurrentCamera
-			if camera then
-				local viewportSize = camera.ViewportSize
-				local center = Vector2.new(viewportSize.X / 2, viewportSize.Y / 2)
-				VirtualUser:CaptureController()
-				VirtualUser:Button1Down(center)
-				task.wait(0.02)
-				VirtualUser:Button1Up(center)
-			end
+			VirtualUser:CaptureController()
+			VirtualUser:Button1Down(safeClickPos)
+			task.wait(0.02)
+			VirtualUser:Button1Up(safeClickPos)
 		end)
 
 		-- 3. Appel direct de la remote Knit
@@ -2117,7 +2127,7 @@ local function createUltimateGUI()
 
 	runBackgroundLoop()
 
-	print("GUI ULTIME V41 CHARGEE !")
+	print("GUI ULTIME V42 CHARGEE !")
 end
 
 -- ============================================================
