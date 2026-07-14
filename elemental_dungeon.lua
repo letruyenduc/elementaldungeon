@@ -312,8 +312,26 @@ local isTweening = false
 local monitoredMobs = {}
 local activeTarget = nil
 
+local farmPlatform -- forward declaration
+
+local function stopFarm()
+	activeTarget = nil
+	isTweening = false
+	pcall(function()
+		local character = LocalPlayer.Character
+		local hrp = character and character:FindFirstChild("HumanoidRootPart")
+		if hrp then
+			hrp.Anchored = false
+		end
+		if farmPlatform then
+			farmPlatform.CanCollide = false
+			farmPlatform.CFrame = CFrame.new(0, -9999, 0)
+		end
+	end)
+end
+
 -- Création de la plateforme locale de support
-local farmPlatform = Instance.new("Part")
+farmPlatform = Instance.new("Part")
 farmPlatform.Name = "FarmPlatform"
 farmPlatform.Size = Vector3.new(8, 1, 8)
 farmPlatform.Anchored = true
@@ -351,6 +369,13 @@ RunService.Stepped:Connect(function()
 			local targetPos = getPositionOffset(mobPart)
 			farmPlatform.CanCollide = not shouldNoclip
 			
+			-- Ancrage Stepped de sécurité : empêche de tomber ou de glisser sous la gravité
+			if not isTweening then
+				hrp.Anchored = true
+			else
+				hrp.Anchored = false
+			end
+			
 			if CONFIG.TravelMode == "Teleport" then
 				-- La plateforme reste collée sous le joueur
 				farmPlatform.CFrame = CFrame.new(hrp.Position - Vector3.new(0, 2.5, 0))
@@ -358,23 +383,29 @@ RunService.Stepped:Connect(function()
 				-- Téléportation à la demande uniquement si le monstre sort de notre portée d'attaque
 				local distToMob = (hrp.Position - mobPart.Position).Magnitude
 				if distToMob > (CONFIG.MaxAttackDistance - 2) then
+					hrp.Anchored = false -- Libérer temporairement l'ancrage pour téléporter
 					hrp.CFrame = CFrame.new(targetPos)
 					farmPlatform.CFrame = CFrame.new(targetPos - Vector3.new(0, 2.5, 0))
+					hrp.Anchored = true
 				end
 			else
 				-- Mode Tween classique : la plateforme suit la destination du Tween
 				farmPlatform.CFrame = CFrame.new(targetPos - Vector3.new(0, 2.5, 0))
 				if not isTweening and (hrp.Position - targetPos).Magnitude > 6 then
+					hrp.Anchored = false
 					hrp.CFrame = CFrame.new(targetPos)
+					hrp.Anchored = true
 				end
 			end
 		else
 			farmPlatform.CanCollide = false
 			farmPlatform.CFrame = CFrame.new(0, -9999, 0)
+			if hrp then hrp.Anchored = false end
 		end
 	else
 		farmPlatform.CanCollide = false
 		farmPlatform.CFrame = CFrame.new(0, -9999, 0)
+		if hrp then hrp.Anchored = false end
 	end
 end)
 
@@ -2370,7 +2401,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V58 CHARGEE !")
+	print("GUI ULTIME V59 CHARGEE !")
 end
 
 -- ============================================================
