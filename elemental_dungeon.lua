@@ -167,8 +167,7 @@ local CONFIG = {
 	SelectedElement = "Auto-Detect",
 
 	-- Combat Settings
-	SwingDelayMin = 0.08,
-	SwingDelayMax = 0.20,
+	SwingDelay = 0.1,
 	AttackMode = "Sword & Skills",
 	MaxAttackDistance = 15,
 	
@@ -848,8 +847,7 @@ local function runBackgroundLoop()
 				end
 			end
 
-			local delay = math.random(CONFIG.SwingDelayMin * 100, CONFIG.SwingDelayMax * 100) / 100
-			task.wait(delay)
+			task.wait(CONFIG.SwingDelay)
 		end
 	end)
 end
@@ -1663,14 +1661,8 @@ local function createUltimateGUI()
 		CONFIG.AttackMode = newVal
 	end)
 
-	createInputRow(pageCombat, "Attack Delay Min (s) :", "rbxassetid://6031768426", CONFIG.SwingDelayMin, 11, function(box, text)
-		local val = tonumber(text)
-		if val and val >= 0.01 and val <= 2 then CONFIG.SwingDelayMin = val else box.Text = tostring(CONFIG.SwingDelayMin) end
-	end)
-
-	createInputRow(pageCombat, "Attack Delay Max (s) :", "rbxassetid://6031768426", CONFIG.SwingDelayMax, 12, function(box, text)
-		local val = tonumber(text)
-		if val and val >= 0.01 and val <= 2 then CONFIG.SwingDelayMax = val else box.Text = tostring(CONFIG.SwingDelayMax) end
+	createSliderRow(pageCombat, "Attack Delay (seconds) :", "rbxassetid://6031768426", CONFIG.SwingDelay, 0.01, 1.0, 11, function(newVal)
+		CONFIG.SwingDelay = newVal
 	end)
 
 	createInputRow(pageCombat, "Attack Range (studs) :", "rbxassetid://6034855071", CONFIG.MaxAttackDistance, 13, function(box, text)
@@ -2107,7 +2099,7 @@ local function createUltimateGUI()
 
 	runBackgroundLoop()
 
-	print("GUI ULTIME V36 CHARGEE !")
+	print("GUI ULTIME V37 CHARGEE !")
 end
 
 -- ============================================================
