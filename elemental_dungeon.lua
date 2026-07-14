@@ -78,7 +78,7 @@ local function scanDungeons()
 		end
 	end
 	if #list == 0 then
-		list = { "Beginners", "Jungle", "Underwater", "Fire", "Cloud", "SnowCastle" }
+		list = { "Beginners", "Jungle", "Underwater", "Fire", "Cloud", "SnowCastle", "InfiniteTime" }
 	end
 	table.sort(list)
 	return list
@@ -107,10 +107,10 @@ local function scanDifficulties()
 		end
 	end)
 	if #list == 0 then
-		list = { "Easy", "Medium", "Hard", "Hell", "Nightmare", "Mythic", "Hardcore", "Timelost" }
+		list = { "Easy", "Medium", "Hard", "Hell", "Nightmare", "Mythic", "Hardcore", "Timelost", "Infinite" }
 	else
 		-- Insérer les difficultés standard indispensables si non scannées
-		for _, std in ipairs({"Easy", "Medium", "Hard", "Hell", "Nightmare", "Mythic", "Hardcore"}) do
+		for _, std in ipairs({"Easy", "Medium", "Hard", "Hell", "Nightmare", "Mythic", "Hardcore", "Infinite"}) do
 			if not table.find(list, std) then
 				table.insert(list, std)
 			end
@@ -613,7 +613,8 @@ local DIFFICULTY_MAP = {
 	["Nightmare"] = "Nightmare",
 	["Mythic"] = "Mythic",
 	["Hardcore"] = "Hardcore",
-	["Timelost"] = "Timelost"
+	["Timelost"] = "Timelost",
+	["Infinite"] = "Infinite"
 }
 
 function createDungeon(name, difficulty)
@@ -2233,7 +2234,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V48 CHARGEE !")
+	print("GUI ULTIME V49 CHARGEE !")
 end
 
 -- ============================================================
