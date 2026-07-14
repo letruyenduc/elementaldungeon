@@ -17,6 +17,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
 
 -- 2. CHEMINS DIRECTS VERS LES SERVICES
 local Services = ReplicatedStorage.ReplicatedStorage.Packages.Knit.Services
@@ -40,6 +41,7 @@ end
 local UseSword = WeaponService.RF and WeaponService.RF:FindFirstChild("UseSword")
 local UseWeapon = WeaponService.RF and WeaponService.RF:FindFirstChild("UseWeapon")
 local UseAbility = AttackService and AttackService.RF and AttackService.RF:FindFirstChild("UseAbility")
+local SwordActivated = AttackService and AttackService.RE and AttackService.RE:FindFirstChild("SwordActivated")
 local StartDungeon = DungeonService.RF and DungeonService.RF:FindFirstChild("StartDungeon")
 local VoteOn = PartyService and PartyService.RF and PartyService.RF:FindFirstChild("VoteOn")
 local CollectDrop = DropsService and DropsService.RF and DropsService.RF:FindFirstChild("CollectDrop")
@@ -550,7 +552,16 @@ function swing(target)
 			VirtualUser:Button1Up(safeClickPos)
 		end)
 
-		-- 3. Appel direct de la remote Knit avec différents formats d'arguments cibles
+		-- 3. Simulation via Roblox VirtualInputManager (Simule un vrai clic de souris matériel)
+		pcall(function()
+			if VirtualInputManager then
+				VirtualInputManager:SendMouseButtonEvent(safeClickPos.X, safeClickPos.Y, 0, true, game, 1)
+				task.wait(0.01)
+				VirtualInputManager:SendMouseButtonEvent(safeClickPos.X, safeClickPos.Y, 0, false, game, 1)
+			end
+		end)
+
+		-- 4. Appel direct de la remote Knit avec différents formats d'arguments cibles
 		if UseSword then
 			pcall(function()
 				UseSword:InvokeServer()
@@ -562,6 +573,13 @@ function swing(target)
 						UseSword:InvokeServer(targetPart.Position)
 					end
 				end
+			end)
+		end
+
+		-- 5. Notification de l'animation de l'épée via le RemoteEvent
+		if SwordActivated then
+			pcall(function()
+				SwordActivated:FireServer()
 			end)
 		end
 	end)
@@ -2201,7 +2219,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V44 CHARGEE !")
+	print("GUI ULTIME V45 CHARGEE !")
 end
 
 -- ============================================================
