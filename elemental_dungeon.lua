@@ -43,12 +43,13 @@ local UseWeapon = WeaponService.RF and WeaponService.RF:FindFirstChild("UseWeapo
 local UseAbility = AttackService and AttackService.RF and AttackService.RF:FindFirstChild("UseAbility")
 local SwordActivated = AttackService and AttackService.RE and AttackService.RE:FindFirstChild("SwordActivated")
 local StartDungeon = DungeonService.RF and DungeonService.RF:FindFirstChild("StartDungeon")
+local StartParty = PartyService and PartyService.RF and PartyService.RF:FindFirstChild("StartParty")
 local VoteOn = PartyService and PartyService.RF and PartyService.RF:FindFirstChild("VoteOn")
 local CollectDrop = DropsService and DropsService.RF and DropsService.RF:FindFirstChild("CollectDrop")
 local UseHeal = HealingService and HealingService.RF and HealingService.RF:FindFirstChild("UseHeal")
 local Sell = InventoryService and InventoryService.RF and InventoryService.RF:FindFirstChild("Sell")
 
-if not UseSword or not StartDungeon then
+if not UseSword or not StartDungeon or not StartParty then
 	print("Critical Remotes not found!")
 	return
 end
@@ -615,6 +616,13 @@ function createDungeon(name, difficulty)
 	pcall(function()
 		StartDungeon:InvokeServer(name, remoteDiff)
 	end)
+	task.wait(1)
+	logMessage("Dungeon Start: Teleporting Party")
+	pcall(function()
+		if StartParty then
+			StartParty:InvokeServer()
+		end
+	end)
 end
 
 function retry()
@@ -912,8 +920,8 @@ local function runBackgroundLoop()
 				task.spawn(autoSell)
 			end
 
-			-- Relancement de donjon / Vote retry (uniquement si autofarm actif et aucun monstre)
-			if CONFIG.AutoFarm and loopCounter % 12 == 0 then
+			-- Relancement de donjon / Vote retry (indépendant de AutoFarm pour autoriser le lancement depuis le Lobby)
+			if loopCounter % 12 == 0 then
 				local mobs = getAliveMobs()
 				if #mobs == 0 then
 					activeTarget = nil
@@ -2219,7 +2227,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V45 CHARGEE !")
+	print("GUI ULTIME V46 CHARGEE !")
 end
 
 -- ============================================================
