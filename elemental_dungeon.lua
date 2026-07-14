@@ -93,17 +93,12 @@ local function scanDifficulties()
 		if dungeonsData then
 			for _, child in ipairs(dungeonsData:GetChildren()) do
 				if child:IsA("ModuleScript") then
-					local module = require(child)
-					if module and module.Difficulties then
-						for diff, _ in pairs(module.Difficulties) do
-							if not table.find(list, diff) then
-								table.insert(list, diff)
-							end
-						end
-					elseif module and module.Rewards then
-						for diff, _ in pairs(module.Rewards) do
-							if not table.find(list, diff) then
-								table.insert(list, diff)
+					-- Scan dynamique des répertoires CustomDifficulties sans require()
+					local customFolder = child:FindFirstChild("CustomDifficulties")
+					if customFolder then
+						for _, diffFile in ipairs(customFolder:GetChildren()) do
+							if not table.find(list, diffFile.Name) then
+								table.insert(list, diffFile.Name)
 							end
 						end
 					end
@@ -112,7 +107,14 @@ local function scanDifficulties()
 		end
 	end)
 	if #list == 0 then
-		list = { "Easy", "Medium", "Hard", "Hell", "Nightmare", "Mythic" }
+		list = { "Easy", "Medium", "Hard", "Hell", "Nightmare", "Mythic", "Hardcore", "Timelost" }
+	else
+		-- Insérer les difficultés standard indispensables si non scannées
+		for _, std in ipairs({"Easy", "Medium", "Hard", "Hell", "Nightmare", "Mythic", "Hardcore"}) do
+			if not table.find(list, std) then
+				table.insert(list, std)
+			end
+		end
 	end
 	table.sort(list)
 	return list
@@ -609,7 +611,9 @@ local DIFFICULTY_MAP = {
 	["Hard"] = "Hard",
 	["Hell"] = "Hell",
 	["Nightmare"] = "Nightmare",
-	["Mythic"] = "Mythic"
+	["Mythic"] = "Mythic",
+	["Hardcore"] = "Hardcore",
+	["Timelost"] = "Timelost"
 }
 
 function createDungeon(name, difficulty)
@@ -2229,7 +2233,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V47 CHARGEE !")
+	print("GUI ULTIME V48 CHARGEE !")
 end
 
 -- ============================================================
