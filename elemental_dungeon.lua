@@ -162,7 +162,7 @@ local CONFIG = {
 	HitboxSize = 30,
 
 	-- Équipement intelligent
-	EquipMode = "Both",
+	EquipMode = "Weapon Only",
 	SelectedWeapon = "Auto-Detect",
 	SelectedElement = "Auto-Detect",
 
@@ -2104,7 +2104,7 @@ local function createUltimateGUI()
 
 	runBackgroundLoop()
 
-	print("GUI ULTIME V38 CHARGEE !")
+	print("GUI ULTIME V39 CHARGEE !")
 end
 
 -- ============================================================
