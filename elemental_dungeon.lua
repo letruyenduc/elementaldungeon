@@ -546,7 +546,7 @@ function getClosestMob()
 end
 
 function swing(target)
-	logMessage("Combat: Swing Weapon (Activate + Clic)")
+	logMessage("Combat: Swing Weapon (Clic)")
 	pcall(function()
 		local character = LocalPlayer.Character
 		local tool = character and character:FindFirstChildOfClass("Tool")
@@ -588,6 +588,7 @@ function swing(target)
 		end)
 
 		-- 3. Simulation via Roblox VirtualInputManager (Simule un vrai clic de souris matériel)
+		-- C'est la méthode de sécurité ultime : le script local de l'arme prend le relais et communique proprement avec le serveur
 		pcall(function()
 			if VirtualInputManager then
 				VirtualInputManager:SendMouseButtonEvent(safeClickPos.X, safeClickPos.Y, 0, true, game, 1)
@@ -595,28 +596,6 @@ function swing(target)
 				VirtualInputManager:SendMouseButtonEvent(safeClickPos.X, safeClickPos.Y, 0, false, game, 1)
 			end
 		end)
-
-		-- 4. Appel direct de la remote Knit avec différents formats d'arguments cibles
-		if UseSword then
-			pcall(function()
-				UseSword:InvokeServer()
-				if target then
-					UseSword:InvokeServer(target)
-					local targetPart = target:FindFirstChild("HumanoidRootPart") or target:FindFirstChild("PrimaryPart")
-					if targetPart then
-						UseSword:InvokeServer(targetPart)
-						UseSword:InvokeServer(targetPart.Position)
-					end
-				end
-			end)
-		end
-
-		-- 5. Notification de l'animation de l'épée via le RemoteEvent
-		if SwordActivated then
-			pcall(function()
-				SwordActivated:FireServer()
-			end)
-		end
 	end)
 end
 
@@ -2290,7 +2269,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V52 CHARGEE !")
+	print("GUI ULTIME V53 CHARGEE !")
 end
 
 -- ============================================================
