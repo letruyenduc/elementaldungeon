@@ -189,6 +189,8 @@ local CONFIG = {
 	AutoAttack = true,
 	AutoHeal = true,
 	AutoCollect = true,
+	CollectPotions = true,
+	CollectLoot = true,
 	AutoEquip = true,
 	AutoSkillsElement = true, -- Auto cast sorts magiques
 	AutoSkillsSword = true,   -- Auto cast sorts d'épées
@@ -662,8 +664,35 @@ function retry()
 end
 
 function collectDrop(drop)
+	logMessage("Collect Drop: " .. tostring(drop.Name))
+	
+	local char = LocalPlayer.Character
+	local hrp = char and char:FindFirstChild("HumanoidRootPart")
+	if hrp then
+		local partsToTouch = {}
+		if drop:IsA("BasePart") then
+			table.insert(partsToTouch, drop)
+		end
+		for _, desc in ipairs(drop:GetDescendants()) do
+			if desc:IsA("BasePart") then
+				table.insert(partsToTouch, desc)
+			end
+		end
+		
+		for _, part in ipairs(partsToTouch) do
+			if part:FindFirstChild("TouchInterest") then
+				if firetouchinterest then
+					pcall(function()
+						firetouchinterest(hrp, part, 0)
+						task.wait(0.01)
+						firetouchinterest(hrp, part, 1)
+					end)
+				end
+			end
+		end
+	end
+
 	if CollectDrop then
-		logMessage("Collect Drop: " .. tostring(drop.Name))
 		pcall(function()
 			CollectDrop:InvokeServer(drop)
 		end)
@@ -755,10 +784,23 @@ function autoCollect()
 	if not drops then return end
 
 	for _, drop in ipairs(drops:GetChildren()) do
-		if drop:IsA("Part") and drop:FindFirstChild("TouchInterest") then
-			collectDrop(drop)
-			STATS.LootCollected = STATS.LootCollected + 1
-			task.wait(0.05)
+		if drop:IsA("BasePart") or drop:IsA("Model") then
+			local name = drop.Name:lower()
+			local isPotion = name:find("potion") or name:find("pot")
+			local isLoot = not isPotion
+			
+			local shouldCollect = false
+			if isPotion and CONFIG.CollectPotions then
+				shouldCollect = true
+			elseif isLoot and CONFIG.CollectLoot then
+				shouldCollect = true
+			end
+			
+			if shouldCollect then
+				collectDrop(drop)
+				STATS.LootCollected = STATS.LootCollected + 1
+				task.wait(0.02)
+			end
 		end
 	end
 end
@@ -2029,6 +2071,8 @@ local function createUltimateGUI()
 
 		createSectionHeader(pageDungeon, "LOOT COLLECT", 9)
 		createToggleRow(pageDungeon, "Auto Collect Drops", "rbxassetid://6034287523", "AutoCollect", 10)
+		createToggleRow(pageDungeon, "Collect Potions", "rbxassetid://6034287523", "CollectPotions", 11)
+		createToggleRow(pageDungeon, "Collect Equip & Materials", "rbxassetid://6034287523", "CollectLoot", 12)
 	end)
 	if not dungeonSuccess then
 		print("DUNGEON TAB ERROR: " .. tostring(dungeonErr))
@@ -2282,7 +2326,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V54 CHARGEE !")
+	print("GUI ULTIME V55 CHARGEE !")
 end
 
 -- ============================================================
