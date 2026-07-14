@@ -745,7 +745,12 @@ local function runBackgroundLoop()
 					if targetPart and hrp then
 						-- Si le déplacement automatique est actif, on considère qu'on est à portée.
 						-- Sinon, seulement si on s'approche manuellement à moins de 25 studs.
-						local maxDist = CONFIG.AutoFarm and 40 or CONFIG.MaxAttackDistance
+						local maxDist = CONFIG.MaxAttackDistance
+						if CONFIG.AutoFarm then
+							maxDist = 40
+						elseif CONFIG.HitboxExpander then
+							maxDist = (CONFIG.HitboxSize or 30) + 5
+						end
 						inRange = (hrp.Position - targetPart.Position).Magnitude <= maxDist
 					end
 
@@ -2099,7 +2104,7 @@ local function createUltimateGUI()
 
 	runBackgroundLoop()
 
-	print("GUI ULTIME V37 CHARGEE !")
+	print("GUI ULTIME V38 CHARGEE !")
 end
 
 -- ============================================================
