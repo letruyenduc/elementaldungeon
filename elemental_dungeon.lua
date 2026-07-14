@@ -49,8 +49,8 @@ local CollectDrop = DropsService and DropsService.RF and DropsService.RF:FindFir
 local UseHeal = HealingService and HealingService.RF and HealingService.RF:FindFirstChild("UseHeal")
 local Sell = InventoryService and InventoryService.RF and InventoryService.RF:FindFirstChild("Sell")
 
-if not UseSword or not StartDungeon or not StartParty then
-	print("Critical Remotes not found!")
+if not UseSword then
+	print("Critical Remotes not found (Weapon required)!")
 	return
 end
 
@@ -2290,7 +2290,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V51 CHARGEE !")
+	print("GUI ULTIME V52 CHARGEE !")
 end
 
 -- ============================================================
