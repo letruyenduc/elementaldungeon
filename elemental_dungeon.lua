@@ -318,7 +318,9 @@ farmPlatform.Name = "FarmPlatform"
 farmPlatform.Size = Vector3.new(8, 1, 8)
 farmPlatform.Anchored = true
 farmPlatform.CanCollide = true
-farmPlatform.Transparency = 1
+farmPlatform.Transparency = 0.4
+farmPlatform.Color = Color3.fromRGB(0, 255, 120)
+farmPlatform.Material = Enum.Material.Neon
 farmPlatform.Parent = Workspace
 
 RunService.Stepped:Connect(function()
@@ -327,10 +329,17 @@ RunService.Stepped:Connect(function()
 
 	-- Noclip seulement pendant le déplacement (isTweening) ou si activé de manière permanente
 	local shouldNoclip = isTweening or CONFIG.NoclipPermanent
-	if shouldNoclip and character then
+	if character then
 		for _, part in ipairs(character:GetDescendants()) do
-			if part:IsA("BasePart") and part.CanCollide then
-				part.CanCollide = false
+			if part:IsA("BasePart") then
+				if shouldNoclip then
+					part.CanCollide = false
+				else
+					-- Réactiver les collisions pour se tenir debout sur la plateforme
+					if part.Name == "HumanoidRootPart" or part.Name == "UpperTorso" or part.Name == "LowerTorso" or part.Name == "Torso" or part.Name == "Head" then
+						part.CanCollide = true
+					end
+				end
 			end
 		end
 	end
@@ -2361,7 +2370,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V57 CHARGEE !")
+	print("GUI ULTIME V58 CHARGEE !")
 end
 
 -- ============================================================
