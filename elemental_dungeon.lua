@@ -775,6 +775,9 @@ local function runBackgroundLoop()
 							else
 								-- Tour Sorts Élémentaires
 								autoEquipSpecific(CONFIG.SelectedElement, true)
+								if CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Sword Only" then
+									swing()
+								end
 								if CONFIG.AutoSkillsElement and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
 									for _, slot in ipairs(CONFIG.SelectedSkillsElement) do
 										task.spawn(useSkill, slot)
@@ -795,6 +798,9 @@ local function runBackgroundLoop()
 								end
 							elseif mode == "Element Only" then
 								autoEquipSpecific(CONFIG.SelectedElement, true)
+								if CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Sword Only" then
+									swing()
+								end
 								if CONFIG.AutoSkillsElement and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
 									for _, slot in ipairs(CONFIG.SelectedSkillsElement) do
 										task.spawn(useSkill, slot)
@@ -2104,7 +2110,7 @@ local function createUltimateGUI()
 
 	runBackgroundLoop()
 
-	print("GUI ULTIME V39 CHARGEE !")
+	print("GUI ULTIME V40 CHARGEE !")
 end
 
 -- ============================================================
