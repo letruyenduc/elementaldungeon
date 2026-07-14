@@ -120,8 +120,40 @@ local function scanDifficulties()
 	return list
 end
 
+local function scanDungeonDifficulties()
+	local map = {}
+	local sharedModules = ReplicatedStorage.ReplicatedStorage.SharedModules
+	local dungeonsFolder = sharedModules and sharedModules:FindFirstChild("Dungeons")
+	local dungeonsData = dungeonsFolder and dungeonsFolder:FindFirstChild("DungeonsData")
+	
+	local dungeonsList = scanDungeons()
+	for _, dgName in ipairs(dungeonsList) do
+		-- Par défaut, tout donjon possède les difficultés de base
+		local diffs = { "Easy", "Medium", "Hard", "Hell", "Nightmare", "Mythic", "Hardcore", "Infinite" }
+		
+		if dungeonsData then
+			local moduleName = dgName .. "Dungeon"
+			local child = dungeonsData:FindFirstChild(moduleName)
+			if child then
+				local customFolder = child:FindFirstChild("CustomDifficulties")
+				if customFolder then
+					for _, diffFile in ipairs(customFolder:GetChildren()) do
+						if not table.find(diffs, diffFile.Name) then
+							table.insert(diffs, diffFile.Name)
+						end
+					end
+				end
+			end
+		end
+		table.sort(diffs)
+		map[dgName] = diffs
+	end
+	return map
+end
+
 local DUNGEONS_LIST = scanDungeons()
 local DIFFICULTIES_LIST = scanDifficulties()
+local DUNGEON_DIFFICULTIES = scanDungeonDifficulties()
 
 -- ============================================================
 -- 6. SCAN DES ARMES ET COMPÉTENCES
@@ -1421,6 +1453,16 @@ local function createUltimateGUI()
 		end)
 
 		frame.Parent = parent
+
+		function frame:SetOptions(newOptions)
+			options = newOptions
+			rebuildDropdownItems(newOptions)
+		end
+
+		function frame:SetValue(value)
+			btn.Text = tostring(value) .. "  ▼"
+		end
+
 		return frame
 	end
 
@@ -1957,11 +1999,21 @@ local function createUltimateGUI()
 	-- 4. DUNGEON TAB
 	local dungeonSuccess, dungeonErr = pcall(function()
 		createSectionHeader(pageDungeon, "LOBBY SETTINGS", 1)
+		local diffDropdown
 		createDropdownRow(pageDungeon, "Dungeon Name :", "rbxassetid://6034287517", CONFIG.DungeonName, DUNGEONS_LIST, 2, function(newVal)
 			CONFIG.DungeonName = newVal
+			if diffDropdown then
+				local allowed = DUNGEON_DIFFICULTIES[newVal] or { "Easy", "Medium", "Hard", "Hell" }
+				diffDropdown:SetOptions(allowed)
+				if not table.find(allowed, CONFIG.Difficulty) then
+					CONFIG.Difficulty = allowed[1]
+					diffDropdown:SetValue(allowed[1])
+				end
+			end
 		end)
 
-		createDropdownRow(pageDungeon, "Difficulty :", "rbxassetid://6034287517", CONFIG.Difficulty, DIFFICULTIES_LIST, 3, function(newVal)
+		local initialDiffs = DUNGEON_DIFFICULTIES[CONFIG.DungeonName] or DIFFICULTIES_LIST
+		diffDropdown = createDropdownRow(pageDungeon, "Difficulty :", "rbxassetid://6034287517", CONFIG.Difficulty, initialDiffs, 3, function(newVal)
 			CONFIG.Difficulty = newVal
 		end)
 
@@ -2234,7 +2286,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V49 CHARGEE !")
+	print("GUI ULTIME V50 CHARGEE !")
 end
 
 -- ============================================================
