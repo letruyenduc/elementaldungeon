@@ -1046,6 +1046,35 @@ local function runBackgroundLoop()
 				local target = getClosestMob()
 				if target then
 					tweenToMob(target)
+				else
+					-- Aucun monstre vivant dans la salle : recherche de portail actif
+					local mapFolder = Workspace:FindFirstChild("Map")
+					if mapFolder then
+						local touchDoor = nil
+						for _, desc in ipairs(mapFolder:GetDescendants()) do
+							if desc:IsA("Model") and desc.Name:lower():find("portal") then
+								local door = desc:FindFirstChild("TouchDoor")
+								if door and door:IsA("BasePart") then
+									touchDoor = door
+									break
+								end
+							end
+						end
+						
+						if touchDoor then
+							local character = LocalPlayer.Character
+							local hrp = character and character:FindFirstChild("HumanoidRootPart")
+							if hrp then
+								logMessage("Auto Portal: Transitioning to next room via " .. touchDoor:GetFullName())
+								isTweening = true
+								hrp.Anchored = false
+								task.wait(0.01)
+								hrp.CFrame = touchDoor.CFrame
+								task.wait(0.1)
+								isTweening = false
+							end
+						end
+					end
 				end
 			end
 
@@ -2490,7 +2519,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V68 CHARGEE !")
+	print("GUI ULTIME V69 CHARGEE !")
 end
 
 -- ============================================================
