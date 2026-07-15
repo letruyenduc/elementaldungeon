@@ -938,6 +938,28 @@ end
 -- 10. FIL PERMANENT D'EXÉCUTION (BACKGROUND LOOP)
 -- ============================================================
 
+local function hasDungeonPotions()
+	local playerGui = LocalPlayer:FindFirstChild("PlayerGui")
+	if not playerGui then return false end
+	
+	local function getAmount(gui)
+		local pbar = gui and gui:FindFirstChild("PlayerBar")
+		local main = pbar and pbar:FindFirstChild("Main")
+		local pot = main and main:FindFirstChild("PotionBar")
+		local amt = pot and pot:FindFirstChild("Amount")
+		return amt and amt.Text
+	end
+	
+	local amtText = getAmount(playerGui:FindFirstChild("Main")) or getAmount(playerGui:FindFirstChild("Mobile") and playerGui.Mobile:FindFirstChild("Main"))
+	if amtText then
+		if amtText:sub(1, 2) == "0/" or amtText == "0" then
+			return false
+		end
+		return true
+	end
+	return true -- Par défaut
+end
+
 local function runBackgroundLoop()
 	task.spawn(function()
 		local loopCounter = 0
@@ -957,12 +979,23 @@ local function runBackgroundLoop()
 				end)
 			end
 
-			-- Auto-heal (soin constant si activé)
-			if CONFIG.AutoHeal and UseHeal then
+			-- Auto-heal (soin magique + potion si activé et PV bas)
+			if CONFIG.AutoHeal then
 				local character = LocalPlayer.Character
 				local humanoid = character and character:FindFirstChild("Humanoid")
 				if humanoid and humanoid.Health / humanoid.MaxHealth < CONFIG.HealThreshold then
-					pcall(function() UseHeal:InvokeServer() end)
+					-- 1. Sort magique de soin
+					if UseHeal then
+						pcall(function() UseHeal:InvokeServer() end)
+					end
+					-- 2. Potion de donjon (Simulation touche W sur AZERTY / Z sur QWERTY)
+					if hasDungeonPotions() and VirtualInputManager then
+						pcall(function()
+							VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Z, false, game)
+							task.wait(0.05)
+							VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Z, false, game)
+						end)
+					end
 					task.wait(0.2)
 				end
 			end
@@ -2414,7 +2447,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V62 CHARGEE !")
+	print("GUI ULTIME V63 CHARGEE !")
 end
 
 -- ============================================================
