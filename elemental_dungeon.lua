@@ -699,7 +699,8 @@ local lastSkillCastTime = {}
 function useSkill(slot, isSwordSkill)
 	local now = os.clock()
 	local lastCast = lastSkillCastTime[tostring(slot) .. "_" .. tostring(isSwordSkill)] or 0
-	if (now - lastCast) < 2.5 then
+	local delay = CONFIG.SkillDelay or 0.5
+	if (now - lastCast) < delay then
 		return
 	end
 	lastSkillCastTime[tostring(slot) .. "_" .. tostring(isSwordSkill)] = now
@@ -2489,7 +2490,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V67 CHARGEE !")
+	print("GUI ULTIME V68 CHARGEE !")
 end
 
 -- ============================================================
