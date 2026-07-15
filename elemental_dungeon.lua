@@ -411,9 +411,11 @@ task.spawn(function()
 	end
 end)
 
+local lastTarget = nil
+local savedOffset = Vector3.new(0, 0, 0)
+
 function getPositionOffset(mobPart)
 	local mobPos = mobPart.Position
-	local offset = Vector3.new(CONFIG.TP_Offset_X, CONFIG.TP_Offset_Y, CONFIG.TP_Offset_Z)
 	local distance = CONFIG.TP_Distance
 	local posMode = CONFIG.TP_Position
 
@@ -432,15 +434,23 @@ function getPositionOffset(mobPart)
 		direction = mobPart.CFrame.RightVector * distance
 	end
 
-	local baseTarget = mobPos + direction + offset
+	local offset = Vector3.new(CONFIG.TP_Offset_X, CONFIG.TP_Offset_Y, CONFIG.TP_Offset_Z)
+	
 	if CONFIG.RandomizeOffset then
-		local rRange = CONFIG.RandomOffsetRange
-		local rx = math.random(-rRange * 100, rRange * 100) / 100
-		local ry = math.random(-rRange * 100, rRange * 100) / 100
-		local rz = math.random(-rRange * 100, rRange * 100) / 100
-		baseTarget = baseTarget + Vector3.new(rx, ry, rz)
+		if activeTarget ~= lastTarget or not lastTarget then
+			lastTarget = activeTarget
+			local rRange = CONFIG.RandomOffsetRange or 1
+			local rx = math.random(-rRange * 100, rRange * 100) / 100
+			local ry = math.random(-rRange * 100, rRange * 100) / 100
+			local rz = math.random(-rRange * 100, rRange * 100) / 100
+			savedOffset = Vector3.new(rx, ry, rz)
+		end
+		offset = offset + savedOffset
+	else
+		savedOffset = Vector3.new(0, 0, 0)
 	end
-	return baseTarget
+
+	return mobPos + direction + offset
 end
 
 function tweenToPosition(position)
@@ -2507,7 +2517,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V78 CHARGEE !")
+	print("GUI ULTIME V79 CHARGEE !")
 end
 
 -- ============================================================
