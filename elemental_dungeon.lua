@@ -721,8 +721,29 @@ function useSkill(slot, isSwordSkill)
 			end)
 		end
 	else
+		local key = nil
+		if slot == 1 then
+			key = Enum.KeyCode.F
+		elseif slot == 2 then
+			key = Enum.KeyCode.R
+		elseif slot == 3 then
+			key = Enum.KeyCode.C
+		elseif slot == 4 then
+			key = Enum.KeyCode.V
+		elseif slot == 5 then
+			key = Enum.KeyCode.G
+		end
+		
+		if key and VirtualInputManager then
+			logMessage("Element Skill Cast: Key " .. tostring(key.Name))
+			pcall(function()
+				VirtualInputManager:SendKeyEvent(true, key, false, game)
+				task.wait(0.05)
+				VirtualInputManager:SendKeyEvent(false, key, false, game)
+			end)
+		end
+		
 		if UseAbility then
-			logMessage("Element Skill Cast: Slot " .. tostring(slot))
 			pcall(function()
 				UseAbility:InvokeServer(slot)
 			end)
@@ -1071,7 +1092,7 @@ local function runBackgroundLoop()
 								if CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Sword Only" then
 									swing(target)
 								end
-								if CONFIG.AutoSkillsElement and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
+								if CONFIG.AutoSkillsElement and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
 									for _, slot in ipairs(CONFIG.SelectedSkillsElement) do
 										task.spawn(useSkill, slot, false)
 									end
@@ -1094,7 +1115,7 @@ local function runBackgroundLoop()
 								if CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Sword Only" then
 									swing(target)
 								end
-								if CONFIG.AutoSkillsElement and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
+								if CONFIG.AutoSkillsElement and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
 									for _, slot in ipairs(CONFIG.SelectedSkillsElement) do
 										task.spawn(useSkill, slot, false)
 									end
@@ -1109,7 +1130,7 @@ local function runBackgroundLoop()
 										task.spawn(useSkill, slot, true)
 									end
 								end
-								if CONFIG.AutoSkillsElement and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
+								if CONFIG.AutoSkillsElement and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
 									for _, slot in ipairs(CONFIG.SelectedSkillsElement) do
 										task.spawn(useSkill, slot, false)
 									end
@@ -2466,7 +2487,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V65 CHARGEE !")
+	print("GUI ULTIME V66 CHARGEE !")
 end
 
 -- ============================================================
