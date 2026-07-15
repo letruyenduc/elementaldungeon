@@ -216,7 +216,7 @@ local CONFIG = {
 	TP_Offset_Z = 0,
 	TP_Distance = 10,
 	TP_Position = "Behind",
-	RandomizeOffset = false,
+	RandomizeOffset = true,
 	RandomOffsetRange = 1,
 	
 	-- Skills Découplés
@@ -2529,7 +2529,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V71 CHARGEE !")
+	print("GUI ULTIME V72 CHARGEE !")
 end
 
 -- ============================================================
