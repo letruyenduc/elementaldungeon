@@ -654,7 +654,7 @@ function swing(target)
 		local safeClickPos = Vector2.new(100, 100) -- Fallback
 		if camera then
 			local viewportSize = camera.ViewportSize
-			safeClickPos = Vector2.new(viewportSize.X * 0.15, viewportSize.Y * 0.5)
+			safeClickPos = Vector2.new(viewportSize.X * 0.5, viewportSize.Y * 0.5)
 		end
 		
 		-- 1. Simulation via l'injecteur (OS level click aux coordonnées de sécurité)
@@ -2447,7 +2447,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V63 CHARGEE !")
+	print("GUI ULTIME V64 CHARGEE !")
 end
 
 -- ============================================================
