@@ -369,32 +369,28 @@ RunService.Stepped:Connect(function()
 			local targetPos = getPositionOffset(mobPart)
 			farmPlatform.CanCollide = not shouldNoclip
 			
-			-- Ancrage Stepped de sécurité : empêche de tomber ou de glisser sous la gravité
+			-- Stabilisation physique par vélocité neutre et verrouillage de CFrame (sans ancrage)
+			hrp.Anchored = false
 			if not isTweening then
-				hrp.Anchored = true
-			else
-				hrp.Anchored = false
+				hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+				hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+				hrp.CFrame = CFrame.new(targetPos)
 			end
 			
 			if CONFIG.TravelMode == "Teleport" then
-				-- La plateforme reste collée sous le joueur
 				farmPlatform.CFrame = CFrame.new(hrp.Position - Vector3.new(0, 2.5, 0))
 				
-				-- Téléportation à la demande uniquement si le monstre sort de notre portée d'attaque
+				-- Téléportation à la demande si le monstre sort de notre portée d'attaque
 				local distToMob = (hrp.Position - mobPart.Position).Magnitude
 				if distToMob > (CONFIG.MaxAttackDistance - 2) then
-					hrp.Anchored = false -- Libérer temporairement l'ancrage pour téléporter
 					hrp.CFrame = CFrame.new(targetPos)
 					farmPlatform.CFrame = CFrame.new(targetPos - Vector3.new(0, 2.5, 0))
-					hrp.Anchored = true
 				end
 			else
-				-- Mode Tween classique : la plateforme suit la destination du Tween
+				-- Mode Tween
 				farmPlatform.CFrame = CFrame.new(targetPos - Vector3.new(0, 2.5, 0))
 				if not isTweening and (hrp.Position - targetPos).Magnitude > 6 then
-					hrp.Anchored = false
 					hrp.CFrame = CFrame.new(targetPos)
-					hrp.Anchored = true
 				end
 			end
 		else
@@ -2529,7 +2525,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V73 CHARGEE !")
+	print("GUI ULTIME V74 CHARGEE !")
 end
 
 -- ============================================================
