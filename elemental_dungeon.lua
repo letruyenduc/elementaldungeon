@@ -215,7 +215,7 @@ local CONFIG = {
 	TP_Offset_Y = 0,
 	TP_Offset_Z = 0,
 	TP_Distance = 10,
-	TP_Position = "Behind",
+	TP_Position = "Top",
 	RandomizeOffset = true,
 	RandomOffsetRange = 1,
 	
@@ -374,7 +374,7 @@ RunService.Stepped:Connect(function()
 			if not isTweening then
 				hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
 				hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-				hrp.CFrame = CFrame.new(targetPos)
+				hrp.CFrame = CFrame.lookAt(targetPos, mobPart.Position)
 			end
 			
 			if CONFIG.TravelMode == "Teleport" then
@@ -383,14 +383,14 @@ RunService.Stepped:Connect(function()
 				-- Téléportation à la demande si le monstre sort de notre portée d'attaque
 				local distToMob = (hrp.Position - mobPart.Position).Magnitude
 				if distToMob > (CONFIG.MaxAttackDistance - 2) then
-					hrp.CFrame = CFrame.new(targetPos)
+					hrp.CFrame = CFrame.lookAt(targetPos, mobPart.Position)
 					farmPlatform.CFrame = CFrame.new(targetPos - Vector3.new(0, 2.5, 0))
 				end
 			else
 				-- Mode Tween
 				farmPlatform.CFrame = CFrame.new(targetPos - Vector3.new(0, 2.5, 0))
 				if not isTweening and (hrp.Position - targetPos).Magnitude > 6 then
-					hrp.CFrame = CFrame.new(targetPos)
+					hrp.CFrame = CFrame.lookAt(targetPos, mobPart.Position)
 				end
 			end
 		else
@@ -2525,7 +2525,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V75 CHARGEE !")
+	print("GUI ULTIME V76 CHARGEE !")
 end
 
 -- ============================================================
