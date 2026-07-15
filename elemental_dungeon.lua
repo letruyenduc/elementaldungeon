@@ -206,7 +206,7 @@ local CONFIG = {
 	SelectedElement = "Auto-Detect",
 
 	-- Combat Settings
-	SwingDelay = 0.25,
+	SwingDelay = 0.35,
 	AttackMode = "Sword & Skills",
 	MaxAttackDistance = 15,
 	
@@ -222,7 +222,7 @@ local CONFIG = {
 	-- Skills Découplés
 	SelectedSkillsElement = { 1, 2, 3, 4 },
 	SelectedSkillsSword = { 1, 2, 3, 4 },
-	SkillDelay = 0.5,
+	SkillDelay = 1.2,
 
 	-- Dungeon
 	DungeonName = DUNGEONS_LIST[1] or "Beginners",
@@ -2497,7 +2497,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V80 CHARGEE !")
+	print("GUI ULTIME V81 CHARGEE !")
 end
 
 -- ============================================================
