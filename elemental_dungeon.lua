@@ -25,10 +25,29 @@ local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 
--- 2. CHEMINS DIRECTS VERS LES SERVICES
-local Services = ReplicatedStorage.ReplicatedStorage.Packages.Knit.Services
+-- 2. DYNAMIC KNIT SERVICES SCANNER
+local function getKnitServicesFolder()
+	local found = ReplicatedStorage:FindFirstChild("Services", true)
+	if found then return found end
+	
+	local knit = ReplicatedStorage:FindFirstChild("Knit", true)
+	if knit then
+		local services = knit:FindFirstChild("Services")
+		if services then return services end
+	end
+	
+	return ReplicatedStorage:FindFirstChild("ReplicatedStorage") 
+		and ReplicatedStorage.ReplicatedStorage:FindFirstChild("Packages")
+		and ReplicatedStorage.ReplicatedStorage.Packages:FindFirstChild("Knit")
+		and ReplicatedStorage.ReplicatedStorage.Packages.Knit:FindFirstChild("Services")
+end
 
--- 3. RÉCUPÉRATION DES SERVICES
+local Services = getKnitServicesFolder()
+if not Services then
+	print("Knit Services folder not found!")
+	return
+end
+
 local WeaponService = Services:FindFirstChild("WeaponService")
 local AttackService = Services:FindFirstChild("AttackService")
 local DungeonService = Services:FindFirstChild("DungeonService")
@@ -38,14 +57,9 @@ local DropsService = Services:FindFirstChild("DropsService")
 local HealingService = Services:FindFirstChild("HealingService")
 local AFKService = Services:FindFirstChild("AFKService")
 
-if not WeaponService or not DungeonService then
-	print("Knit Services not found!")
-	return
-end
-
 -- 4. REMOTES
-local UseSword = WeaponService.RF and WeaponService.RF:FindFirstChild("UseSword")
-local UseWeapon = WeaponService.RF and WeaponService.RF:FindFirstChild("UseWeapon")
+local UseSword = WeaponService and WeaponService.RF and WeaponService.RF:FindFirstChild("UseSword")
+local UseWeapon = WeaponService and WeaponService.RF and WeaponService.RF:FindFirstChild("UseWeapon")
 local UseAbility = AttackService and AttackService.RF and AttackService.RF:FindFirstChild("UseAbility")
 local SwordActivated = AttackService and AttackService.RE and AttackService.RE:FindFirstChild("SwordActivated")
 local StartDungeon = DungeonService.RF and DungeonService.RF:FindFirstChild("StartDungeon")
@@ -382,7 +396,11 @@ steppedConnection = RunService.Stepped:Connect(function()
 				hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
 				hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
 				local lookPos = Vector3.new(mobPart.Position.X, hrp.Position.Y, mobPart.Position.Z)
-				hrp.CFrame = CFrame.lookAt(targetPos, lookPos)
+				-- Micro-fluctuations trigonométriques pour casser la rigidité mathématique
+				local jitterX = math.sin(os.clock() * 5) * 0.05
+				local jitterZ = math.cos(os.clock() * 5) * 0.05
+				local jitterPos = targetPos + Vector3.new(jitterX, 0, jitterZ)
+				hrp.CFrame = CFrame.lookAt(jitterPos, lookPos)
 			end
 			
 			if CONFIG.TravelMode == "Teleport" then
@@ -390,13 +408,19 @@ steppedConnection = RunService.Stepped:Connect(function()
 				local distToMob = (hrp.Position - mobPart.Position).Magnitude
 				if distToMob > (CONFIG.MaxAttackDistance - 2) then
 					local lookPos = Vector3.new(mobPart.Position.X, hrp.Position.Y, mobPart.Position.Z)
-					hrp.CFrame = CFrame.lookAt(targetPos, lookPos)
+					local jitterX = math.sin(os.clock() * 5) * 0.05
+					local jitterZ = math.cos(os.clock() * 5) * 0.05
+					local jitterPos = targetPos + Vector3.new(jitterX, 0, jitterZ)
+					hrp.CFrame = CFrame.lookAt(jitterPos, lookPos)
 				end
 			else
 				-- Mode Tween
 				if not isTweening and (hrp.Position - targetPos).Magnitude > 6 then
 					local lookPos = Vector3.new(mobPart.Position.X, hrp.Position.Y, mobPart.Position.Z)
-					hrp.CFrame = CFrame.lookAt(targetPos, lookPos)
+					local jitterX = math.sin(os.clock() * 5) * 0.05
+					local jitterZ = math.cos(os.clock() * 5) * 0.05
+					local jitterPos = targetPos + Vector3.new(jitterX, 0, jitterZ)
+					hrp.CFrame = CFrame.lookAt(jitterPos, lookPos)
 				end
 			end
 		else
@@ -668,22 +692,40 @@ function swing(target)
 			safeClickPos = Vector2.new(viewportSize.X * 0.5, viewportSize.Y * 0.5)
 		end
 		
-		-- Utilisation exclusive d'une seule méthode d'entrée par ordre de sécurité
+		-- 1. Simulation VirtualInputManager (Simule l'input matériel Roblox)
+		local successVIM = false
 		if VirtualInputManager then
-			VirtualInputManager:SendMouseButtonEvent(safeClickPos.X, safeClickPos.Y, 0, true, game, 1)
-			task.wait(0.01)
-			VirtualInputManager:SendMouseButtonEvent(safeClickPos.X, safeClickPos.Y, 0, false, game, 1)
-		elseif tool then
-			tool:Activate()
-		else
-			-- Fallback injecteur si aucun autre n'est dispo
+			pcall(function()
+				VirtualInputManager:SendMouseButtonEvent(safeClickPos.X, safeClickPos.Y, 0, true, game, 1)
+				task.wait(0.01)
+				VirtualInputManager:SendMouseButtonEvent(safeClickPos.X, safeClickPos.Y, 0, false, game, 1)
+				successVIM = true
+			end)
+		end
+		
+		-- 2. Activation du Tool (Roblox Engine standard - toujours lancé pour assurer la réplication locale)
+		if tool then
+			pcall(function() tool:Activate() end)
+		end
+		
+		-- 3. Fallbacks injecteur ou VirtualUser si VirtualInputManager a échoué ou n'est pas présent
+		if not successVIM then
+			pcall(function()
+				VirtualUser:CaptureController()
+				VirtualUser:Button1Down(safeClickPos)
+				task.wait(0.01)
+				VirtualUser:Button1Up(safeClickPos)
+			end)
+			
 			if mouse1click then
-				if click_mouse or mouseclick then
-					local clickFn = click_mouse or mouseclick
-					clickFn(safeClickPos.X, safeClickPos.Y)
-				else
-					mouse1click()
-				end
+				pcall(function()
+					if click_mouse or mouseclick then
+						local clickFn = click_mouse or mouseclick
+						clickFn(safeClickPos.X, safeClickPos.Y)
+					else
+						mouse1click()
+					end
+				end)
 			end
 		end
 	end)
@@ -693,7 +735,9 @@ local lastSkillCastTime = {}
 function useSkill(slot, isSwordSkill)
 	local now = os.clock()
 	local lastCast = lastSkillCastTime[tostring(slot) .. "_" .. tostring(isSwordSkill)] or 0
-	local delay = CONFIG.SkillDelay or 0.5
+	local jitter = math.random(-150, 150) / 1000
+	local delay = (CONFIG.SkillDelay or 1.2) + jitter
+	if delay < 0.1 then delay = 0.1 end
 	if (now - lastCast) < delay then
 		return
 	end
@@ -1203,7 +1247,9 @@ local function runBackgroundLoop()
 				end
 			end
 
-			task.wait(CONFIG.SwingDelay)
+			local randomSwingDelay = CONFIG.SwingDelay + math.random(-50, 50) / 1000
+			if randomSwingDelay < 0.05 then randomSwingDelay = 0.05 end
+			task.wait(randomSwingDelay)
 		end
 	end)
 end
@@ -2521,7 +2567,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V82 CHARGEE !")
+	print("GUI ULTIME V83 CHARGEE !")
 end
 
 -- ============================================================
