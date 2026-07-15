@@ -320,8 +320,12 @@ local function stopFarm()
 	pcall(function()
 		local character = LocalPlayer.Character
 		local hrp = character and character:FindFirstChild("HumanoidRootPart")
+		local humanoid = character and character:FindFirstChild("Humanoid")
 		if hrp then
 			hrp.Anchored = false
+		end
+		if humanoid then
+			humanoid.PlatformStand = false
 		end
 		if farmPlatform then
 			farmPlatform.CanCollide = false
@@ -365,9 +369,14 @@ RunService.Stepped:Connect(function()
 	-- Gérer la plateforme locale pour l'autofarm
 	if CONFIG.AutoFarm and activeTarget and activeTarget.Parent and hrp then
 		local mobPart = activeTarget:FindFirstChild("HumanoidRootPart") or activeTarget:FindFirstChild("PrimaryPart")
+		local humanoid = character and character:FindFirstChild("Humanoid")
 		if mobPart then
 			local targetPos = getPositionOffset(mobPart)
 			farmPlatform.CanCollide = not shouldNoclip
+			
+			if humanoid and not humanoid.PlatformStand then
+				humanoid.PlatformStand = true
+			end
 			
 			-- Stabilisation physique par vélocité neutre et verrouillage de CFrame (sans ancrage)
 			hrp.Anchored = false
@@ -397,11 +406,16 @@ RunService.Stepped:Connect(function()
 			farmPlatform.CanCollide = false
 			farmPlatform.CFrame = CFrame.new(0, -9999, 0)
 			if hrp then hrp.Anchored = false end
+			if humanoid then humanoid.PlatformStand = false end
 		end
 	else
 		farmPlatform.CanCollide = false
 		farmPlatform.CFrame = CFrame.new(0, -9999, 0)
 		if hrp then hrp.Anchored = false end
+		if character then
+			local humanoid = character:FindFirstChild("Humanoid")
+			if humanoid then humanoid.PlatformStand = false end
+		end
 	end
 end)
 
@@ -2525,7 +2539,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V76 CHARGEE !")
+	print("GUI ULTIME V77 CHARGEE !")
 end
 
 -- ============================================================
