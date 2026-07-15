@@ -3,6 +3,12 @@
 -- Style officiel "Dungeon Creator" - Compétences Épée vs Élément Découplées
 -- ======================================================
 
+if getgenv().ElementalFarmRunning then
+	getgenv().ElementalFarmRunning = false
+	task.wait(0.5)
+end
+getgenv().ElementalFarmRunning = true
+
 repeat
 	task.wait()
 until game:IsLoaded()
@@ -335,7 +341,15 @@ farmPlatform.CanCollide = false
 farmPlatform.Transparency = 1
 farmPlatform.Parent = nil
 
-RunService.Stepped:Connect(function()
+local steppedConnection
+steppedConnection = RunService.Stepped:Connect(function()
+	if not getgenv().ElementalFarmRunning then
+		if steppedConnection then
+			steppedConnection:Disconnect()
+			steppedConnection = nil
+		end
+		return
+	end
 	local character = LocalPlayer.Character
 	local hrp = character and character:FindFirstChild("HumanoidRootPart")
 
@@ -394,7 +408,7 @@ RunService.Stepped:Connect(function()
 end)
 
 task.spawn(function()
-	while true do
+	while getgenv().ElementalFarmRunning do
 		task.wait(1)
 		pcall(function()
 			local character = LocalPlayer.Character
@@ -614,16 +628,25 @@ function getClosestMob()
 	
 	-- Increment kills reliably
 	if currentTarget and not monitoredMobs[currentTarget] then
-		monitoredMobs[currentTarget] = true
+		local connections = {}
+		monitoredMobs[currentTarget] = connections
 		local humanoid = currentTarget:FindFirstChild("Humanoid")
 		if humanoid then
-			humanoid.Died:Connect(function()
+			connections.died = humanoid.Died:Connect(function()
 				STATS.Kills = STATS.Kills + 1
+				pcall(function()
+					if connections.died then connections.died:Disconnect() end
+					if connections.destroying then connections.destroying:Disconnect() end
+				end)
 				monitoredMobs[currentTarget] = nil
 				if activeTarget == currentTarget then activeTarget = nil end
 			end)
 		end
-		currentTarget.Destroying:Connect(function()
+		connections.destroying = currentTarget.Destroying:Connect(function()
+			pcall(function()
+				if connections.died then connections.died:Disconnect() end
+				if connections.destroying then connections.destroying:Disconnect() end
+			end)
 			monitoredMobs[currentTarget] = nil
 			if activeTarget == currentTarget then activeTarget = nil end
 		end)
@@ -976,7 +999,7 @@ local function runBackgroundLoop()
 	task.spawn(function()
 		local loopCounter = 0
 		local combatCycle = 0
-		while true do
+		while getgenv().ElementalFarmRunning do
 			loopCounter = loopCounter + 1
 
 			-- Équipement permanent hors combat (si AutoEquip actif)
@@ -1287,6 +1310,7 @@ local function createUltimateGUI()
 	end)
 	closeBtn.Activated:Connect(function()
 		CONFIG.AutoFarm = false
+		getgenv().ElementalFarmRunning = false
 		pcall(function()
 			RunService:Set3dRenderingEnabled(true)
 		end)
@@ -2497,7 +2521,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V81 CHARGEE !")
+	print("GUI ULTIME V82 CHARGEE !")
 end
 
 -- ============================================================
