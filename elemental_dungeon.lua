@@ -696,18 +696,37 @@ function swing(target)
 end
 
 local lastSkillCastTime = {}
-function useSkill(slot)
-	if UseAbility then
-		local now = os.clock()
-		local lastCast = lastSkillCastTime[slot] or 0
-		if (now - lastCast) < 2.5 then
-			return
+function useSkill(slot, isSwordSkill)
+	local now = os.clock()
+	local lastCast = lastSkillCastTime[tostring(slot) .. "_" .. tostring(isSwordSkill)] or 0
+	if (now - lastCast) < 2.5 then
+		return
+	end
+	lastSkillCastTime[tostring(slot) .. "_" .. tostring(isSwordSkill)] = now
+
+	if isSwordSkill then
+		local key = nil
+		if slot == 1 then
+			key = Enum.KeyCode.R
+		elseif slot == 2 then
+			key = Enum.KeyCode.F
 		end
-		lastSkillCastTime[slot] = now
-		logMessage("Skill Cast: Slot " .. tostring(slot))
-		pcall(function()
-			UseAbility:InvokeServer(slot)
-		end)
+		
+		if key and VirtualInputManager then
+			logMessage("Sword Skill Cast: Key " .. tostring(key.Name))
+			pcall(function()
+				VirtualInputManager:SendKeyEvent(true, key, false, game)
+				task.wait(0.05)
+				VirtualInputManager:SendKeyEvent(false, key, false, game)
+			end)
+		end
+	else
+		if UseAbility then
+			logMessage("Element Skill Cast: Slot " .. tostring(slot))
+			pcall(function()
+				UseAbility:InvokeServer(slot)
+			end)
+		end
 	end
 end
 
@@ -1041,9 +1060,9 @@ local function runBackgroundLoop()
 									swing(target)
 								end
 								-- Auto cast sorts d'épées pendant le tour de l'épée
-								if CONFIG.AutoSkillsSword and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
+								if CONFIG.AutoSkillsSword and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
 									for _, slot in ipairs(CONFIG.SelectedSkillsSword) do
-										task.spawn(useSkill, slot)
+										task.spawn(useSkill, slot, true)
 									end
 								end
 							else
@@ -1054,7 +1073,7 @@ local function runBackgroundLoop()
 								end
 								if CONFIG.AutoSkillsElement and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
 									for _, slot in ipairs(CONFIG.SelectedSkillsElement) do
-										task.spawn(useSkill, slot)
+										task.spawn(useSkill, slot, false)
 									end
 								end
 							end
@@ -1065,9 +1084,9 @@ local function runBackgroundLoop()
 								if CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Sword Only" then
 									swing(target)
 								end
-								if CONFIG.AutoSkillsSword and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
+								if CONFIG.AutoSkillsSword and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
 									for _, slot in ipairs(CONFIG.SelectedSkillsSword) do
-										task.spawn(useSkill, slot)
+										task.spawn(useSkill, slot, true)
 									end
 								end
 							elseif mode == "Element Only" then
@@ -1077,7 +1096,7 @@ local function runBackgroundLoop()
 								end
 								if CONFIG.AutoSkillsElement and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
 									for _, slot in ipairs(CONFIG.SelectedSkillsElement) do
-										task.spawn(useSkill, slot)
+										task.spawn(useSkill, slot, false)
 									end
 								end
 							else
@@ -1085,14 +1104,14 @@ local function runBackgroundLoop()
 								if CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Sword Only" then
 									swing(target)
 								end
-								if CONFIG.AutoSkillsSword and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
+								if CONFIG.AutoSkillsSword and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
 									for _, slot in ipairs(CONFIG.SelectedSkillsSword) do
-										task.spawn(useSkill, slot)
+										task.spawn(useSkill, slot, true)
 									end
 								end
 								if CONFIG.AutoSkillsElement and UseAbility and (CONFIG.AttackMode == "Sword & Skills" or CONFIG.AttackMode == "Skills Only") then
 									for _, slot in ipairs(CONFIG.SelectedSkillsElement) do
-										task.spawn(useSkill, slot)
+										task.spawn(useSkill, slot, false)
 									end
 								end
 							end
@@ -2447,7 +2466,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V64 CHARGEE !")
+	print("GUI ULTIME V65 CHARGEE !")
 end
 
 -- ============================================================
