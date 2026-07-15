@@ -765,14 +765,12 @@ function collectDrop(drop)
 		end
 		
 		for _, part in ipairs(partsToTouch) do
-			if part:FindFirstChild("TouchInterest") then
-				if firetouchinterest then
-					pcall(function()
-						firetouchinterest(hrp, part, 0)
-						task.wait(0.01)
-						firetouchinterest(hrp, part, 1)
-					end)
-				end
+			if firetouchinterest then
+				pcall(function()
+					firetouchinterest(hrp, part, 0)
+					task.wait(0.005)
+					firetouchinterest(hrp, part, 1)
+				end)
 			end
 		end
 	end
@@ -865,11 +863,16 @@ end
 
 function autoCollect()
 	if not CONFIG.AutoCollect then return end
+	
 	local drops = Workspace:FindFirstChild("Drops")
+	if not drops and Workspace.CurrentCamera then
+		drops = Workspace.CurrentCamera:FindFirstChild("Drops")
+	end
 	if not drops then return end
 
-	for _, drop in ipairs(drops:GetChildren()) do
-		if drop:IsA("BasePart") or drop:IsA("Model") then
+	-- Utiliser GetDescendants pour trouver les objets Potion ou Drop
+	for _, drop in ipairs(drops:GetDescendants()) do
+		if drop:IsA("Model") and (drop.Name == "Potion" or drop.Name == "Drop" or drop.Parent.Name == "Drops" or drop.Parent.Name == "Drop") then
 			local name = drop.Name:lower()
 			local isPotion = name:find("potion") or name:find("pot")
 			local isLoot = not isPotion
@@ -2411,7 +2414,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V61 CHARGEE !")
+	print("GUI ULTIME V62 CHARGEE !")
 end
 
 -- ============================================================
