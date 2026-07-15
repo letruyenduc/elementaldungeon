@@ -1067,10 +1067,20 @@ local function runBackgroundLoop()
 							if hrp then
 								logMessage("Auto Portal: Transitioning to next room via " .. touchDoor:GetFullName())
 								isTweening = true
-								hrp.Anchored = false
 								task.wait(0.01)
-								hrp.CFrame = touchDoor.CFrame
-								task.wait(0.1)
+								
+								if CONFIG.TravelMode == "Teleport" then
+									hrp.Anchored = false
+									hrp.CFrame = touchDoor.CFrame
+									if farmPlatform then
+										farmPlatform.CFrame = touchDoor.CFrame - Vector3.new(0, 2.5, 0)
+									end
+									task.wait(0.1)
+								else
+									-- Voyage par Tween (légitime et sans kick)
+									tweenToPosition(touchDoor.Position)
+								end
+								
 								isTweening = false
 							end
 						end
@@ -2519,7 +2529,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V69 CHARGEE !")
+	print("GUI ULTIME V70 CHARGEE !")
 end
 
 -- ============================================================
