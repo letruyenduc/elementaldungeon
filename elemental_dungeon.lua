@@ -198,7 +198,7 @@ local CONFIG = {
 	AutoRetry = false,
 	AutoJoinDungeon = false,
 	HitboxExpander = true,
-	HitboxSize = 30,
+	HitboxSize = 40,
 
 	-- Équipement intelligent
 	EquipMode = "Weapon Only",
@@ -214,7 +214,7 @@ local CONFIG = {
 	TP_Offset_X = 0,
 	TP_Offset_Y = -3,
 	TP_Offset_Z = 0,
-	TP_Distance = 3,
+	TP_Distance = 10,
 	TP_Position = "Bottom",
 	RandomizeOffset = false,
 	RandomOffsetRange = 1,
@@ -2411,7 +2411,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V60 CHARGEE !")
+	print("GUI ULTIME V61 CHARGEE !")
 end
 
 -- ============================================================
