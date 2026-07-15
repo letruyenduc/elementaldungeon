@@ -206,7 +206,7 @@ local CONFIG = {
 	SelectedElement = "Auto-Detect",
 
 	-- Combat Settings
-	SwingDelay = 0.15,
+	SwingDelay = 0.25,
 	AttackMode = "Sword & Skills",
 	MaxAttackDistance = 15,
 	
@@ -633,13 +633,10 @@ function getClosestMob()
 end
 
 function swing(target)
-	logMessage("Combat: Swing Weapon (Clic)")
+	logMessage("Combat: Swing Weapon")
 	pcall(function()
 		local character = LocalPlayer.Character
 		local tool = character and character:FindFirstChildOfClass("Tool")
-		if tool then
-			pcall(function() tool:Activate() end)
-		end
 		
 		local camera = Workspace.CurrentCamera
 		local safeClickPos = Vector2.new(100, 100) -- Fallback
@@ -648,41 +645,24 @@ function swing(target)
 			safeClickPos = Vector2.new(viewportSize.X * 0.5, viewportSize.Y * 0.5)
 		end
 		
-		-- 1. Simulation via l'injecteur (OS level click aux coordonnées de sécurité)
-		if mouse1click then
-			pcall(function()
+		-- Utilisation exclusive d'une seule méthode d'entrée par ordre de sécurité
+		if VirtualInputManager then
+			VirtualInputManager:SendMouseButtonEvent(safeClickPos.X, safeClickPos.Y, 0, true, game, 1)
+			task.wait(0.01)
+			VirtualInputManager:SendMouseButtonEvent(safeClickPos.X, safeClickPos.Y, 0, false, game, 1)
+		elseif tool then
+			tool:Activate()
+		else
+			-- Fallback injecteur si aucun autre n'est dispo
+			if mouse1click then
 				if click_mouse or mouseclick then
 					local clickFn = click_mouse or mouseclick
 					clickFn(safeClickPos.X, safeClickPos.Y)
 				else
 					mouse1click()
 				end
-			end)
-		elseif mouse1press and mouse1release then
-			pcall(function()
-				mouse1press()
-				task.wait(0.02)
-				mouse1release()
-			end)
-		end
-
-		-- 2. Simulation via Roblox Engine (VirtualUser)
-		pcall(function()
-			VirtualUser:CaptureController()
-			VirtualUser:Button1Down(safeClickPos)
-			task.wait(0.02)
-			VirtualUser:Button1Up(safeClickPos)
-		end)
-
-		-- 3. Simulation via Roblox VirtualInputManager (Simule un vrai clic de souris matériel)
-		-- C'est la méthode de sécurité ultime : le script local de l'arme prend le relais et communique proprement avec le serveur
-		pcall(function()
-			if VirtualInputManager then
-				VirtualInputManager:SendMouseButtonEvent(safeClickPos.X, safeClickPos.Y, 0, true, game, 1)
-				task.wait(0.01)
-				VirtualInputManager:SendMouseButtonEvent(safeClickPos.X, safeClickPos.Y, 0, false, game, 1)
 			end
-		end)
+		end
 	end)
 end
 
@@ -2517,7 +2497,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V79 CHARGEE !")
+	print("GUI ULTIME V80 CHARGEE !")
 end
 
 -- ============================================================
