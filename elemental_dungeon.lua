@@ -215,7 +215,7 @@ local CONFIG = {
 	TP_Offset_Y = 0,
 	TP_Offset_Z = 0,
 	TP_Distance = 10,
-	TP_Position = "Top",
+	TP_Position = "Behind",
 	RandomizeOffset = true,
 	RandomOffsetRange = 1,
 	
@@ -320,30 +320,20 @@ local function stopFarm()
 	pcall(function()
 		local character = LocalPlayer.Character
 		local hrp = character and character:FindFirstChild("HumanoidRootPart")
-		local humanoid = character and character:FindFirstChild("Humanoid")
 		if hrp then
 			hrp.Anchored = false
-		end
-		if humanoid then
-			humanoid.PlatformStand = false
-		end
-		if farmPlatform then
-			farmPlatform.CanCollide = false
-			farmPlatform.CFrame = CFrame.new(0, -9999, 0)
 		end
 	end)
 end
 
--- Création de la plateforme locale de support
+-- Création de la plateforme locale de support (Désactivée en V78)
 farmPlatform = Instance.new("Part")
 farmPlatform.Name = "FarmPlatform"
 farmPlatform.Size = Vector3.new(8, 1, 8)
 farmPlatform.Anchored = true
-farmPlatform.CanCollide = true
-farmPlatform.Transparency = 0.4
-farmPlatform.Color = Color3.fromRGB(0, 255, 120)
-farmPlatform.Material = Enum.Material.Neon
-farmPlatform.Parent = Workspace
+farmPlatform.CanCollide = false
+farmPlatform.Transparency = 1
+farmPlatform.Parent = nil
 
 RunService.Stepped:Connect(function()
 	local character = LocalPlayer.Character
@@ -366,56 +356,40 @@ RunService.Stepped:Connect(function()
 		end
 	end
 
-	-- Gérer la plateforme locale pour l'autofarm
+	-- Gérer la stabilisation au sol pour l'autofarm
 	if CONFIG.AutoFarm and activeTarget and activeTarget.Parent and hrp then
 		local mobPart = activeTarget:FindFirstChild("HumanoidRootPart") or activeTarget:FindFirstChild("PrimaryPart")
-		local humanoid = character and character:FindFirstChild("Humanoid")
 		if mobPart then
 			local targetPos = getPositionOffset(mobPart)
-			farmPlatform.CanCollide = not shouldNoclip
 			
-			if humanoid and not humanoid.PlatformStand then
-				humanoid.PlatformStand = true
-			end
-			
-			-- Stabilisation physique par vélocité neutre et verrouillage de CFrame (sans ancrage)
+			-- Stabilisation physique par vélocité neutre et verrouillage de CFrame (sans ancrage ni plateforme)
 			hrp.Anchored = false
 			if not isTweening then
 				hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
 				hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-				hrp.CFrame = CFrame.lookAt(targetPos, mobPart.Position)
+				local lookPos = Vector3.new(mobPart.Position.X, hrp.Position.Y, mobPart.Position.Z)
+				hrp.CFrame = CFrame.lookAt(targetPos, lookPos)
 			end
 			
 			if CONFIG.TravelMode == "Teleport" then
-				farmPlatform.CFrame = CFrame.new(hrp.Position - Vector3.new(0, 2.5, 0))
-				
 				-- Téléportation à la demande si le monstre sort de notre portée d'attaque
 				local distToMob = (hrp.Position - mobPart.Position).Magnitude
 				if distToMob > (CONFIG.MaxAttackDistance - 2) then
-					hrp.CFrame = CFrame.lookAt(targetPos, mobPart.Position)
-					farmPlatform.CFrame = CFrame.new(targetPos - Vector3.new(0, 2.5, 0))
+					local lookPos = Vector3.new(mobPart.Position.X, hrp.Position.Y, mobPart.Position.Z)
+					hrp.CFrame = CFrame.lookAt(targetPos, lookPos)
 				end
 			else
 				-- Mode Tween
-				farmPlatform.CFrame = CFrame.new(targetPos - Vector3.new(0, 2.5, 0))
 				if not isTweening and (hrp.Position - targetPos).Magnitude > 6 then
-					hrp.CFrame = CFrame.lookAt(targetPos, mobPart.Position)
+					local lookPos = Vector3.new(mobPart.Position.X, hrp.Position.Y, mobPart.Position.Z)
+					hrp.CFrame = CFrame.lookAt(targetPos, lookPos)
 				end
 			end
 		else
-			farmPlatform.CanCollide = false
-			farmPlatform.CFrame = CFrame.new(0, -9999, 0)
 			if hrp then hrp.Anchored = false end
-			if humanoid then humanoid.PlatformStand = false end
 		end
 	else
-		farmPlatform.CanCollide = false
-		farmPlatform.CFrame = CFrame.new(0, -9999, 0)
 		if hrp then hrp.Anchored = false end
-		if character then
-			local humanoid = character:FindFirstChild("Humanoid")
-			if humanoid then humanoid.PlatformStand = false end
-		end
 	end
 end)
 
@@ -500,9 +474,6 @@ function tweenToMob(mob)
 		local hrp = character and character:FindFirstChild("HumanoidRootPart")
 		if hrp then
 			hrp.CFrame = CFrame.new(targetPos)
-			if farmPlatform then
-				farmPlatform.CFrame = CFrame.new(targetPos - Vector3.new(0, 2.5, 0))
-			end
 		end
 		task.wait(0.02) -- Laisser une frame au moteur Roblox
 	else
@@ -1082,9 +1053,6 @@ local function runBackgroundLoop()
 								if CONFIG.TravelMode == "Teleport" then
 									hrp.Anchored = false
 									hrp.CFrame = touchDoor.CFrame
-									if farmPlatform then
-										farmPlatform.CFrame = touchDoor.CFrame - Vector3.new(0, 2.5, 0)
-									end
 									task.wait(0.1)
 								else
 									-- Voyage par Tween (légitime et sans kick)
@@ -2539,7 +2507,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V77 CHARGEE !")
+	print("GUI ULTIME V78 CHARGEE !")
 end
 
 -- ============================================================
