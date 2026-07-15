@@ -2525,7 +2525,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V74 CHARGEE !")
+	print("GUI ULTIME V75 CHARGEE !")
 end
 
 -- ============================================================
@@ -2534,3 +2534,18 @@ end
 
 task.wait(0.5)
 createUltimateGUI()
+
+-- Hook d'auto-rechargement sur changement de serveur (queue_on_teleport)
+local queue_on_teleport = queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport)
+if queue_on_teleport and LocalPlayer then
+	pcall(function()
+		LocalPlayer.OnTeleport:Connect(function(State)
+			if State == Enum.TeleportState.Started then
+				queue_on_teleport([[
+					repeat task.wait(1) until game:IsLoaded()
+					loadstring(game:HttpGet("https://raw.githubusercontent.com/letruyenduc/elementaldungeon/main/elemental_dungeon.lua?t=" .. os.time()))()
+				]])
+			end
+		end)
+	end)
+end
