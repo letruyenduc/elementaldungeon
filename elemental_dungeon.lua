@@ -206,7 +206,7 @@ local CONFIG = {
 	SelectedElement = "Auto-Detect",
 
 	-- Combat Settings
-	SwingDelay = 0.1,
+	SwingDelay = 0.15,
 	AttackMode = "Sword & Skills",
 	MaxAttackDistance = 15,
 	
@@ -239,7 +239,7 @@ local CONFIG = {
 	
 	-- Safety & Physics & Rendering
 	TravelMode = "Tween",
-	TweenSpeed = 60,
+	TweenSpeed = 45,
 	NoclipPermanent = false,
 	WalkSpeed = 16,
 	JumpPower = 50,
@@ -2529,7 +2529,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V72 CHARGEE !")
+	print("GUI ULTIME V73 CHARGEE !")
 end
 
 -- ============================================================
