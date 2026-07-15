@@ -2035,14 +2035,15 @@ local function createUltimateGUI()
 		lblStroke.Parent = lbl
 		lbl.Parent = frame
 
-		for slot = 1, 4 do
+		local keyNamesElement = {"F", "R", "C", "V", "G"}
+		for slot = 1, 5 do
 			local btn = Instance.new("TextButton")
-			btn.Size = UDim2.new(0, 42, 0, 26)
-			btn.Position = UDim2.new(0.4 + (slot - 1) * 0.15, 0, 0.5, -13)
+			btn.Size = UDim2.new(0, 36, 0, 26)
+			btn.Position = UDim2.new(0.38 + (slot - 1) * 0.12, 0, 0.5, -13)
 			
 			local isActivated = table.find(CONFIG.SelectedSkillsElement, slot) ~= nil
 			btn.BackgroundColor3 = isActivated and colorBlueSelect or colorSlateSidebar
-			btn.Text = "Slot " .. slot
+			btn.Text = keyNamesElement[slot] or tostring(slot)
 			btn.TextColor3 = colorTextWhite
 			btn.TextSize = 10
 			btn.Font = Enum.Font.FredokaOne
@@ -2100,6 +2101,7 @@ local function createUltimateGUI()
 		lblStroke.Parent = lbl
 		lbl.Parent = frame
 
+		local keyNamesSword = {"R", "F", "Slot 3", "Slot 4"}
 		for slot = 1, 4 do
 			local btn = Instance.new("TextButton")
 			btn.Size = UDim2.new(0, 42, 0, 26)
@@ -2107,7 +2109,7 @@ local function createUltimateGUI()
 			
 			local isActivated = table.find(CONFIG.SelectedSkillsSword, slot) ~= nil
 			btn.BackgroundColor3 = isActivated and colorBlueSelect or colorSlateSidebar
-			btn.Text = "Slot " .. slot
+			btn.Text = keyNamesSword[slot] or ("Slot " .. slot)
 			btn.TextColor3 = colorTextWhite
 			btn.TextSize = 10
 			btn.Font = Enum.Font.FredokaOne
@@ -2487,7 +2489,7 @@ local function createUltimateGUI()
 	scanKnitRemotes()
 	runBackgroundLoop()
 
-	print("GUI ULTIME V66 CHARGEE !")
+	print("GUI ULTIME V67 CHARGEE !")
 end
 
 -- ============================================================
